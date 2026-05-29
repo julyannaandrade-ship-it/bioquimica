@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fisiopatología del Agua y Electrolitos - Simulador Clínico</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clinical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        biochem: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Barra de Navegación Clínica -->
+    <header class="bg-gradient-to-r from-clinical-900 to-clinical-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                    <i class="fa-solid fa-droplet text-cyan-300 text-2xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Fisiopatología del Agua y Electrolitos</h1>
+                    <p class="text-xs text-slate-300">Plataforma Médica Interactiva de Autoevaluación</p>
+                </div>
+            </div>
+            <!-- Progress Tracker -->
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <div class="w-full sm:w-48 bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                    <div id="global-progress" class="bg-cyan-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span class="text-sm font-semibold whitespace-nowrap" id="progress-text">0 / 20 Resueltas</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Sidebar Navigation & Scorecard -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <!-- Score Card -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Panel de Competencia</h2>
+                <div class="flex items-baseline gap-2 mb-1">
+                    <span class="text-4xl font-extrabold text-clinical-800" id="score-display">0.0</span>
+                    <span class="text-slate-400 text-sm">/ 20 Puntos</span>
+                </div>
+                <div class="mb-4">
+                    <div class="text-xs font-semibold text-slate-500 mb-1">Rango Académico:</div>
+                    <span id="rank-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                        Iniciado Clínico
+                    </span>
+                </div>
+                <div class="border-t border-slate-100 pt-4 space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Bloque Desarrollo (10):</span>
+                        <span id="score-block-1" class="font-semibold">0.0 / 10</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Bloque Opciones (5):</span>
+                        <span id="score-block-2" class="font-semibold">0 / 5</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500">Bloque Verdadero/Falso (5):</span>
+                        <span id="score-block-3" class="font-semibold">0 / 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Block Navigation -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 sticky top-24">
+                <nav class="space-y-1">
+                    <button onclick="switchTab('block-desarrollo')" id="btn-block-desarrollo" class="nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all bg-clinical-50 text-clinical-800 border-l-4 border-clinical-600">
+                        <span><i class="fa-solid fa-file-medical-alt mr-2.5"></i>1. Análisis de Casos</span>
+                        <span class="bg-clinical-200 text-clinical-800 text-xs px-2 py-0.5 rounded-full" id="badge-d">0/10</span>
+                    </button>
+                    <button onclick="switchTab('block-opciones')" id="btn-block-opciones" class="nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-list-check mr-2.5"></i>2. Opción Múltiple</span>
+                        <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full" id="badge-o">0/5</span>
+                    </button>
+                    <button onclick="switchTab('block-vf')" id="btn-block-vf" class="nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-circle-check mr-2.5"></i>3. Verdadero / Falso</span>
+                        <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full" id="badge-vf">0/5</span>
+                    </button>
+                    <button onclick="switchTab('block-report')" id="btn-block-report" class="nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-chart-line mr-2.5"></i>4. Diagnóstico Final</span>
+                        <span class="bg-slate-100 text-slate-500 text-xs px-1.5 py-0.5 rounded" id="badge-rep"><i class="fa-solid fa-lock"></i></span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Central Interactive Workspace -->
+        <div class="lg:col-span-3">
+            
+            <!-- BLOCK 1: DESARROLLO Y ANÁLISIS CLÍNICO -->
+            <div id="block-desarrollo" class="tab-content space-y-6">
+                <div class="bg-gradient-to-r from-clinical-600 to-clinical-700 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1"><i class="fa-solid fa-user-doctor mr-2"></i>Sección 1: Casos de Desarrollo y Análisis Fisiopatológico</h2>
+                    <p class="text-sm text-cyan-100">Redacta tu análisis clínico antes de revelar la justificación médica experta. Evalúa tu respuesta con el estándar de rigor académico de nuestra cátedra.</p>
+                </div>
+
+                <!-- Pregunta 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q1">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 1 &bull; OSMOLARIDAD</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-001</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">1. Osmolaridad y Desplazamiento de Fluidos:</span> Una paciente diabética ingresa a la guardia con una osmolaridad plasmática de 340 mOsm/L (valor normal: 275-295 mOsm/L). Explica hacia qué compartimento (intracelular o extracelular) se desplazará el agua libre y justifica fisiopatológicamente este movimiento.
+                    </h3>
+                    <textarea id="ans-q1" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe aquí tu justificación fisiopatológica..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q1')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q1" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q1', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q1', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Box (Hidden initially) -->
+                    <div id="fb-q1" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            El agua libre se desplazará desde el <strong>compartimento intracelular hacia el extracelular</strong> (deshidratación celular).
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Justificación Fisiopatológica:</strong> La osmolaridad del líquido extracelular (LEC) de 340 mOsm/L supera drásticamente el rango normal fisiológico, convirtiéndolo en un medio altamente hipertónico. Para alcanzar el equilibrio termodinámico, el agua intracelular fluye por ósmosis a través de las membranas celulares (acuaporinas) hacia el LEC a favor de un gradiente de concentración de agua, produciendo crenación celular y disfunción metabólica del citosol.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q2">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 2 &bull; FLUIDOTERAPIA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-002</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">2. Fluidoterapia (Soluciones Hipotónicas):</span> En cuadros de deshidratación severa con hiperosmolaridad, suele indicarse solución salina hipotónica al 0,45 g%. ¿Qué significa el término "hipotónico" en este contexto y por qué se elige esta solución en lugar de la isotónica habitual?
+                    </h3>
+                    <textarea id="ans-q2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe tu hipótesis terapéutica..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q2')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q2" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q2', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q2', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q2" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            <strong>Hipotónico</strong> significa que la solución tiene una osmolaridad menor que la del plasma normal (la solución al 0,45% tiene aprox. 154 mOsm/L frente a los ~290 mOsm/L plasmáticos).
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Indicación Clínica:</strong> Se prefiere esta solución porque el paciente padece un déficit extremo de agua libre intracelular por hiperosmolaridad. La solución fisiológica habitual (NaCl al 0,9%, isotónica) expandirá el espacio extracelular pero aportará demasiado sodio, perpetuando o empeorando la hiperosmolaridad sistémica. La infusión de solución al 0,45% reduce la osmolaridad plasmática gradualmente, permitiendo que el agua reingrese al compartimento celular deshidratado por fuerzas osmóticas.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 3 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q3">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 3 &bull; BIOQUÍMICA NUTRICIONAL</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-003</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">3. Pérdida de Agua y Dietas Restrictivas:</span> Explica bioquímicamente por qué la rápida pérdida de peso en las primeras semanas de una "dieta de moda" estricta se debe fundamentalmente a la pérdida de agua corporal, relacionándolo con la degradación del tejido muscular y el glucógeno hepático.
+                    </h3>
+                    <textarea id="ans-q3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe tu justificación bioquímica..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q3')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q3" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q3', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q3', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q3" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Durante un ayuno estricto o restricción calórica severa, el cuerpo agota rápidamente sus reservas de <strong>glucógeno hepático y muscular</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Mecanismo Bioquímico:</strong> El glucógeno es una macromolécula muy hidrofílica debido a sus abundantes grupos hidroxilo (-OH), almacenando aproximadamente de 3 a 4 gramos de agua por cada gramo de glucógeno. Al degradarse mediante glucogenólisis para mantener la glucemia, todo ese volumen de agua estructurada se libera y se excreta por vía renal. Adicionalmente, el catabolismo del tejido muscular (cuya composición es ~70-80% agua) para la gluconeogénesis libera una cantidad masiva adicional de agua endógena, simulando erróneamente pérdida de tejido adiposo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 4 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q4">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 4 &bull; COMPOSICIÓN TISULAR</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-004</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">4. Agua en Tejidos:</span> Compara la composición del tejido adiposo y del tejido muscular en cuanto a su contenido porcentual de agua. ¿Cómo impacta esta diferencia en la eficiencia del tejido adiposo como principal reserva energética del individuo?
+                    </h3>
+                    <textarea id="ans-q4" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe tu comparación tisular..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q4')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q4" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q4', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q4', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q4" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            El <strong>tejido muscular</strong> es magro y metabólicamente muy activo, conteniendo cerca de un <strong>75-80% de agua</strong>. Por su parte, el <strong>tejido adiposo</strong> está compuesto principalmente de lípidos anhidros y apenas contiene un <strong>10-15% de agua</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Impacto en la Eficiencia Energética:</strong> Al ser hidrofóbicos, los triacilgliceroles (grasas) del tejido adiposo se almacenan de manera puramente compacta y anhidra (sin agua asociada). Si almacenáramos energía en un tejido altamente hidratado, el peso corporal del individuo se multiplicaría drásticamente a niveles incompatibles con la locomoción, haciendo del tejido adiposo la reserva más eficiente en términos de peso/densidad calórica ($9 \text{ kcal/g}$).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 5 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q5">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 5 &bull; BIOFÍSICA DE MACROMOLÉCULAS</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-005</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">5. Propiedades del Glucógeno vs. Triglicéridos:</span> El glucógeno es una molécula muy polar que presenta gran cantidad de grupos hidroxilo. Explica por qué no sería práctico ni biológicamente posible almacenar toda la energía humana en forma de glucógeno debido a su capacidad para retener agua.
+                    </h3>
+                    <textarea id="ans-q5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe tu análisis termodinámico y estructural..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q5')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q5" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q5', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q5', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q5" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            No es viable debido al <strong>arrastre de masa hídrica insostenible</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Razonamiento Fisicoquímico:</strong> El glucógeno retiene ~3-4 veces su peso en agua a través de puentes de hidrógeno con sus grupos hidroxilo polares (además de ofrecer menor densidad calórica: $4 \text{ kcal/g}$). Almacenar el equivalente de energía de nuestras reservas de grasa corporales (aprox. 100,000 kcal en un adulto normal) puramente como glucógeno requeriría unos 25 kg de glucógeno seco, el cual retendría hasta 75-100 kg adicionales de agua, impidiendo físicamente la movilidad y sobrecargando las articulaciones y el sistema cardiovascular de manera incompatible con la vida terrestre.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 6 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q6">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 6 &bull; RESPIRACIÓN CELULAR</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-006</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">6. Agua Metabólica Endógena:</span> En el organismo, el agua también se forma como producto final de la oxidación de los macronutrientes. Indica en qué paso exacto de la respiración celular se genera esta agua y qué molécula actúa como el aceptor final necesario para producirla.
+                    </h3>
+                    <textarea id="ans-q6" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Escribe el paso bioquímico exacto..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q6')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q6" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q6', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q6', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q6" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Se produce al final de la <strong>Cadena de Transporte de Electrones (Complejo IV o Citocromo c Oxidasa)</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Mecanismo Bioquímico:</strong> El <strong>oxígeno diatómico molecular ($O_2$)</strong> actúa como el aceptor final de electrones. En el Complejo IV, cada molécula de $O_2$ acepta cuatro electrones y cuatro protones ($H^+$) provenientes de la matriz mitocondrial para reducirse de forma segura y directa a dos moléculas de agua metabólica o endógena ($2\text{H}_2\text{O}$).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 7 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q7">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 7 &bull; POLIURIA DIABÉTICA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-007</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">7. Poliuria Osmótica:</span> Las pacientes diabéticas en estado descompensado ingresan deshidratadas y con antecedentes de poliuria (aumento de la frecuencia y volumen urinario) y polidipsia (mucha sed). Fundamenta el mecanismo físico-químico por el cual la hiperglucemia induce pérdida de agua renal.
+                    </h3>
+                    <textarea id="ans-q7" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Explica la filtración y transporte de solutos en la nefrona..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q7')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q7" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q7', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q7', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q7" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Este cuadro clínico es la consecuencia directa de una <strong>diuresis osmótica renal</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Mecanismo Fisiopatológico:</strong> Cuando la glucemia supera el umbral de filtración renal aproximado de $180\text{ mg/dL}$, el exceso de glucosa filtrado excede la capacidad de reabsorción activa de los cotransportadores SGLT-2 en el túbulo contorneado proximal. La glucosa permanece entonces disuelta dentro de la luz del túbulo renal, elevando drásticamente la osmolaridad del filtrado tubular. Esto anula el gradiente osmótico normal, actuando como un soluto no reabsorbible que arrastra e impide la reabsorción pasiva de agua, excretándose masivos volúmenes de orina diluida con la consiguiente deshidratación celular, activando el centro hipotalámico de la sed (polidipsia).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 8 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q8">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 8 &bull; ELECTROLITOS</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-008</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">8. Electrolitos y Equilibrio:</span> El balance de agua en los compartimentos líquidos del cuerpo se mantiene gracias a los gradientes de iones a través de las membranas. Nombra los tres principales macrominerales con función de electrolitos y explica brevemente su papel osmótico.
+                    </h3>
+                    <textarea id="ans-q8" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Nombra los iones y describe sus gradientes respectivos..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q8')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q8" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q8', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q8', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q8" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Los tres macrominerales clave son el <strong>Sodio ($\text{Na}^+$)</strong>, el <strong>Potasio ($\text{K}^+$)</strong> y el <strong>Cloruro ($\text{Cl}^-$)</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Papel Osmótico:</strong> El Sodio ($\text{Na}^+$) es el principal catión extracelular y el mayor determinante de la osmolaridad plasmática. El Potasio ($\text{K}^+$) es el principal catión del compartimento intracelular, regulando el volumen citosólico íntimo. El Cloruro ($\text{Cl}^-$) es el principal anión extracelular que acompaña al sodio para mantener la electroneutralidad. Sus concentraciones diferenciales mantenidas activamente por la bomba $\text{Na}^+/\text{K}^+$-ATPasa obligan al agua a distribuirse de forma equilibrada en el organismo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 9 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q9">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 9 &bull; FARMACOLOGÍA CLÍNICA Y CÁLCULOS</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-009</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">9. Volumen de Reposición y Tonicidad:</span> Si administras a un paciente intoxicado de 95 kg un volumen de solución fisiológica de 30 mL/kg, calcula el total de volumen aportado. Justifica químicamente por qué el uso de NaCl al 0,9% (solución isotónica) protege al eritrocito de la lisis.
+                    </h3>
+                    <textarea id="ans-q9" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Muestra tus cálculos y argumentación físico-química..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q9')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q9" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q9', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q9', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q9" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            <strong>Cálculo:</strong> $95 \text{ kg} \times 30 \text{ mL/kg} = 2850 \text{ mL}$ (o bien $2.85\text{ Litros}$).
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Protección del Eritrocito:</strong> La solución de NaCl al 0,9% g% aporta una osmolaridad de aproximadamente $308\text{ mOsm/L}$, la cual se halla en equilibrio osmótico dinámico (isotonía) con el citosol celular del eritrocito (cuyo rango es de ~275-295 mOsm/L). Al no haber gradiente neto de concentración de solutos efectivos a ambos lados de la membrana plasmática, el flujo neto de agua libre hacia adentro y afuera de la célula es idéntico. Así se evita la lisis osmótica (turgencia que rompería la membrana al usar medios hipotónicos) y la crenación (deshidratación celular por medios hipertónicos).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 10 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q10">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-2.5 py-1 rounded-full">CASO 10 &bull; TERMODINÁMICA MITOCONDRIAL</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: FISIO-010</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3">
+                        <span class="text-clinical-600 font-bold">10. Pérdidas Insensibles y Metabolismo:</span> Un paciente con intoxicación por 2,4-DNP presenta hipertermia (piel caliente), respiración rápida (taquipnea) y sudoración profusa. Explica cómo el aumento radical del metabolismo basal y la termogénesis incrementan las vías de pérdida de agua, exigiendo la reposición hídrica inmediata.
+                    </h3>
+                    <textarea id="ans-q10" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all" rows="3" placeholder="Explica el desacoplamiento mitocondrial y las pérdidas de fluidos asociadas..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q10')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                        </button>
+                        <div id="eval-q10" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevalúa tu rigor científico:</span>
+                            <button onclick="setSelfScore('q10', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q10', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q10" class="hidden mt-5 p-4 bg-biochem-50 border-l-4 border-biochem-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-biochem-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-square-poll-horizontal mr-1"></i> Análisis Médico Experto</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            La sustancia 2,4-DNP es un <strong>desacoplante clásico de la fosforilación oxidativa mitocondrial</strong>.
+                        </p>
+                        <p class="text-xs text-slate-600 mt-2">
+                            <strong>Mecanismo de Deshidratación:</strong> Al disipar el gradiente electroquímico de protones en la membrana mitocondrial interna, la energía mitocondrial no puede sintetizar ATP y se libera de forma pura como calor incontrolado (termogénesis desmedida). Para termorregular, el cuerpo activa de forma drástica la sudoración profusa (pérdida de agua sensible con alto riesgo de pérdida de electrolitos) y la hiperventilación/taquipnea pulmonar para expulsar vapor caliente (disparando las pérdidas de agua insensibles). La pérdida hídrica sin compensar colapsaría la volemia plasmática en pocas horas, induciendo un shock hipovolémico letal.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-end pt-4">
+                    <button onclick="switchTab('block-opciones')" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Siguiente Sección (Opción Múltiple) <i class="fa-solid fa-circle-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BLOCK 2: OPCIÓN MÚLTIPLE -->
+            <div id="block-opciones" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-cyan-600 to-clinical-600 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1"><i class="fa-solid fa-list-check mr-2"></i>Sección 2: Test Académico de Opción Múltiple</h2>
+                    <p class="text-sm text-cyan-100">Selecciona con precisión diagnóstica la única opción correcta. El sistema puntuará automáticamente cada acierto clínico.</p>
+                </div>
+
+                <!-- Pregunta 11 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q11">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">PREGUNTA 11 &bull; COMPOSICIÓN CORPORAL</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4">
+                        En relación con el contenido de agua en los principales depósitos de combustible y tejidos celulares, señala la opción correcta:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q11', 'A', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) El tejido adiposo contiene un 80% de agua, haciéndolo una reserva muy pesada.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'B', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) El glucógeno es una molécula apolar y almacena muy poca cantidad de agua.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'C', true)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) El tejido muscular contiene alrededor de un 80% de agua, mientras que el tejido adiposo contiene apenas un 15% de agua.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'D', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) La oxidación de proteínas produce mayor cantidad de agua metabólica que la oxidación de grasas.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q11" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600">
+                        <strong>Explicación:</strong> El tejido muscular es esquelético y magro, necesitando el ambiente citosólico hidratado (~80% agua) para toda su actividad eléctrica y metabólica; los lípidos del adipocito repelen fuertemente el agua facilitando el depósito seco (~15% agua).
+                    </div>
+                </div>
+
+                <!-- Pregunta 12 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q12">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">PREGUNTA 12 &bull; ELECTROLITOS</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4">
+                        Los principales minerales (electrolitos) responsables de establecer gradientes a través de las membranas celulares y mantener el equilibrio del agua en el organismo son:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q12', 'A', true)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) Sodio (Na+), Potasio (K+) y Cloruro (Cl-).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'B', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) Calcio (Ca2+), Fósforo (P) y Magnesio (Mg2+).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'C', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) Hierro (Fe), Zinc (Zn) y Cobre (Cu).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'D', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) Yodo (I) y Selenio (Se).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q12" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600">
+                        <strong>Explicación:</strong> El Na+ es la base osmótica extracelular, el K+ intracelular, y el Cl- el principal anión extracelular coordinado con el sodio.
+                    </div>
+                </div>
+
+                <!-- Pregunta 13 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q13">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">PREGUNTA 13 &bull; CLÍNICA DE LA OSMOLARIDAD</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4">
+                        Una paciente diabética en urgencias presenta una osmolaridad plasmática de 340 mOsm/L (Referencia: 275–295 mOsm/L). Este valor nos indica que el líquido extracelular es:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q13', 'A', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) Hipotónico, lo que provocará el ingreso de agua hacia el interior de las células (edema celular).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'B', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) Isotónico, por lo que las células mantendrán su volumen estable sin desplazamientos netos de agua.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'C', true)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) Hipertónico, generando una fuerza osmótica que desplazará agua desde el espacio intracelular al extracelular, causando deshidratación celular.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'D', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) Alcalótico, induciendo un exceso de hidratación por retención de dióxido de carbono.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q13" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600">
+                        <strong>Explicación:</strong> Al estar el plasma a 340 mOsm/L (muy por encima de los 295 mOsm/L normales), ejerce una gran fuerza osmótica efectiva que succiona literalmente el agua libre citosólica celular hacia el vaso sanguíneo.
+                    </div>
+                </div>
+
+                <!-- Pregunta 14 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q14">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">PREGUNTA 14 &bull; FISIOLOGÍA METABÓLICA</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4">
+                        El agua que se forma de manera endógena producto del metabolismo oxidativo de la glucosa, lípidos y proteínas se produce específicamente en:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q14', 'A', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) La glucólisis citoplasmática tras la formación de lactato.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'B', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) El ciclo del Ácido Tricarboxílico (ATC), por ruptura del Acetil-CoA.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'C', true)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) La Cadena de Transporte de Electrones, cuando los electrones son transferidos finalmente al oxígeno (O2).</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'D', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) El tejido adiposo durante el almacenamiento de triacilgliceroles.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q14" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600">
+                        <strong>Explicación:</strong> El $O_2$ es el aceptor final del flujo mitocondrial de electrones, el cual se asocia con hidrogeniones para formar agua metabólica segura.
+                    </div>
+                </div>
+
+                <!-- Pregunta 15 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q15">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">PREGUNTA 15 &bull; INFUSIONES</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4">
+                        A una paciente deshidratada con glucemia de 630 mg/dL se le prescriben 3 litros de solución salina hipotónica al 0.45 g%. La finalidad principal de que esta solución sea "hipotónica" en lugar de "isotónica" es:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q15', 'A', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) Arrastrar exceso de potasio desde la célula hacia la sangre.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'B', true)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) Proveer un líquido con menor concentración de solutos que el plasma normal, promoviendo el reingreso de agua al compartimento intracelular deshidratado.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'C', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) Mantener constante el volumen celular para no afectar el metabolismo de los lípidos.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'D', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) Entregar una gran carga de energía en forma calórica para compensar el déficit de ATP.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q15" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600">
+                        <strong>Explicación:</strong> El medio celular en esta paciente está severamente encogido y deshidratado por la glucosa. Se debe dar un suero con menor carga de solutos (hipotónico) para forzar el flujo del agua libre hacia adentro del citosol.
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-between pt-4">
+                    <button onclick="switchTab('block-desarrollo')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-circle-arrow-left"></i> Sección Anterior
+                    </button>
+                    <button onclick="switchTab('block-vf')" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Siguiente Sección (V / F) <i class="fa-solid fa-circle-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BLOCK 3: VERDADERO O FALSO -->
+            <div id="block-vf" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1"><i class="fa-solid fa-circle-check mr-2"></i>Sección 3: Diagnóstico de Verdadero o Falso</h2>
+                    <p class="text-sm text-cyan-100">Analiza críticamente cada enunciado médico. Si es falso, la retroalimentación bioquímica te demostrará los motivos con rigor científico.</p>
+                </div>
+
+                <!-- Pregunta 16 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q16">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full">ENUNCIADO 16 &bull; RESERVA DE GLUCÓGENO</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4">
+                        <strong>[ 16 ]</strong> El glucógeno es la reserva de energía más eficiente en términos de espacio y peso, ya que al ser un lípido apolar no se une a moléculas de agua en el medio intracelular.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q16', true, false)" class="btn-t-q16 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q16', false, true)" class="btn-f-q16 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q16" class="hidden mt-4 p-4 bg-teal-50 border-l-4 border-teal-600 rounded-r-xl text-xs text-slate-700">
+                        <strong>Falso. Justificación Médica/Bioquímica:</strong> El glucógeno es un polisacárido (carbohidrato), no un lípido. Es sumamente polar gracias a sus abundantes grupos hidroxilo (-OH), lo que lo obliga a unirse a un peso de agua de 3 a 4 veces mayor que el suyo propio. Los triacilgliceroles sí son lípidos apolares y anhidros, lo que los convierte en la verdadera reserva metabólica de alta eficiencia.
+                    </div>
+                </div>
+
+                <!-- Pregunta 17 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q17">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full">ENUNCIADO 17 &bull; INFUSIONES DE HIPERTONICIDAD</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4">
+                        <strong>[ 17 ]</strong> La administración de 3 litros de solución salina hipotónica al 0,45% (g%) es adecuada en pacientes con deshidratación grave y osmolaridad plasmática aumentada (ej. 340 mOsm/L), ya que cede agua libre para rehidratar el interior celular.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q17', true, true)" class="btn-t-q17 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q17', false, false)" class="btn-f-q17 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q17" class="hidden mt-4 p-4 bg-teal-50 border-l-4 border-teal-600 rounded-r-xl text-xs text-slate-700">
+                        <strong>Verdadero. Justificación Médica/Bioquímica:</strong> Al ser la osmolaridad de la solución salina al 0.45% de unos 154 mOsm/L, es hipotónica en comparación con el medio hipertónico sistémico del paciente. Esto produce el gradiente osmótico necesario para que el agua difunda de forma controlada de vuelta a los citosoles deshidratados.
+                    </div>
+                </div>
+
+                <!-- Pregunta 18 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q18">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full">ENUNCIADO 18 &bull; PÉRDIDAS INSENSIBLES</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4">
+                        <strong>[ 18 ]</strong> En el ser humano, el agua corporal se pierde habitualmente en la orina, sudor y otras secreciones respiratorias, y esta pérdida puede exacerbarse notablemente en un paciente que curse con hipertermia y taquipnea (respiración rápida) debido a un agente desacoplante.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q18', true, true)" class="btn-t-q18 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q18', false, false)" class="btn-f-q18 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q18" class="hidden mt-4 p-4 bg-teal-50 border-l-4 border-teal-600 rounded-r-xl text-xs text-slate-700">
+                        <strong>Verdadero. Justificación Médica/Bioquímica:</strong> Los agentes desacoplantes disipan la energía mitocondrial en forma de calor sistémico, lo cual induce hipertermia. El cuerpo lucha por enfriarse mediante sudoración profusa e hiperventilación (taquipnea), perdiéndose litros de agua corporal vital de forma muy veloz.
+                    </div>
+                </div>
+
+                <!-- Pregunta 19 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q19">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full">ENUNCIADO 19 &bull; DIETAS DE CHOQUE</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4">
+                        <strong>[ 19 ]</strong> Si un individuo ingiere una dieta hipocalórica extrema y pierde 2 kilos en los primeros tres días, esa pérdida se debe íntegramente a la combustión de tejido adiposo (grasas).
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q19', true, false)" class="btn-t-q19 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q19', false, true)" class="btn-f-q19 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q19" class="hidden mt-4 p-4 bg-teal-50 border-l-4 border-teal-600 rounded-r-xl text-xs text-slate-700">
+                        <strong>Falso. Justificación Médica/Bioquímica:</strong> No se quema grasa inmediatamente en tal magnitud. La rápida pérdida se atribuye a la deplesión de glucógeno hepático y muscular, que al degradarse liberan el agua intracelular estructurada (~3-4g de agua por gramo de glucógeno) que luego es excretada por la orina.
+                    </div>
+                </div>
+
+                <!-- Pregunta 20 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q20">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full">ENUNCIADO 20 &bull; MECANISMO DE ELECTROLITOS</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4">
+                        <strong>[ 20 ]</strong> Los macrominerales Sodio (Na+), Potasio (K+) y Cloruro (Cl-) son disueltos en los compartimentos de líquidos corporales donde actúan repeliendo el agua y bloqueando los canales de membrana para evitar la deshidratación intracelular.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q20', true, false)" class="btn-t-q20 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q20', false, true)" class="btn-f-q20 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q20" class="hidden mt-4 p-4 bg-teal-50 border-l-4 border-teal-600 rounded-r-xl text-xs text-slate-700">
+                        <strong>Falso. Justificación Médica/Bioquímica:</strong> Al contrario de repelerla, los electrolitos disueltos ejercen una fuerza atractiva coligativa sobre las moléculas de agua (presión osmótica), coordinando su movimiento y volumen según sus concentraciones a ambos lados de la membrana.
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-between pt-4">
+                    <button onclick="switchTab('block-opciones')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-circle-arrow-left"></i> Sección Anterior
+                    </button>
+                    <button onclick="switchTab('block-report')" id="finish-btn" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Generar Diagnóstico Clínico <i class="fa-solid fa-graduation-cap"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 4: CLINICAL REPORT -->
+            <div id="block-report" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1"><i class="fa-solid fa-chart-line mr-2"></i>Informe de Desempeño Clínico y Diagnóstico Académico</h2>
+                    <p class="text-sm text-slate-300">Análisis detallado de tus competencias en equilibrio hidroelectrolítico y bioquímica metabólica.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="text-center py-6">
+                        <div class="inline-flex items-center justify-center p-4 bg-clinical-50 text-clinical-600 rounded-full mb-4">
+                            <i class="fa-solid fa-stethoscope text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">Tu Score Final</h3>
+                        <div class="text-5xl font-extrabold text-clinical-700 mb-2" id="report-score">0.0 / 20.0</div>
+                        <p class="text-sm text-slate-500 max-w-md mx-auto" id="report-eval-text">
+                            Debes completar las preguntas e interacciones para calcular tu retroalimentación diagnóstica global.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6 mt-6">
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 1: Casos</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b1">0.0 / 10</div>
+                            <p class="text-[11px] text-slate-500 mt-1">Habilidad para justificar fenómenos fisiopatológicos con base bioquímica.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 2: Test</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b2">0 / 5</div>
+                            <p class="text-[11px] text-slate-500 mt-1">Precisión clínica en la toma de decisiones e interpretación rápida.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 3: V / F</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b3">0 / 5</div>
+                            <p class="text-[11px] text-slate-500 mt-1">Identificación rápida de errores conceptuales en bioquímica médica.</p>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Recommendations -->
+                    <div class="mt-6 border-t border-slate-100 pt-6">
+                        <h4 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-prescription-bottle-medical mr-2 text-clinical-600"></i>Recomendaciones Académicas</h4>
+                        <ul class="text-xs text-slate-600 space-y-2.5 list-disc pl-5" id="recommendations-list">
+                            <li>Completa todas las preguntas para ver tu informe de retroalimentación médica personalizada.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-4 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Cátedra de Bioquímica y Fisiología Aplicada. Creado con rigor académico y científico para estudiantes de ciencias médicas.</p>
+    </footer>
+
+    <!-- Core App Logic -->
+    <script>
+        // State management
+        const state = {
+            scores: {
+                q1: 0.0, q2: 0.0, q3: 0.0, q4: 0.0, q5: 0.0, q6: 0.0, q7: 0.0, q8: 0.0, q9: 0.0, q10: 0.0,
+                q11: 0, q12: 0, q13: 0, q14: 0, q15: 0,
+                q16: 0, q17: 0, q18: 0, q19: 0, q20: 0
+            },
+            completed: {
+                q1: false, q2: false, q3: false, q4: false, q5: false, q6: false, q7: false, q8: false, q9: false, q10: false,
+                q11: false, q12: false, q13: false, q14: false, q15: false,
+                q16: false, q17: false, q18: false, q19: false, q20: false
+            }
+        };
+
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Show selected tab
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Reset navigation button styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50";
+            });
+
+            // Set active tab styling
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn w-full text-left px-4 py-3 rounded-xl font-medium text-sm flex items-center justify-between transition-all bg-clinical-50 text-clinical-800 border-l-4 border-clinical-600";
+            }
+
+            // If report page is shown, update report data
+            if (tabId === 'block-report') {
+                updateReport();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Section 1: Reveal Feedback & Self Score
+        function revealFeedback(qId) {
+            // Show feedback
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            // Show self scoring buttons
+            document.getElementById('eval-' + qId).classList.remove('hidden');
+        }
+
+        function setSelfScore(qId, score) {
+            state.scores[qId] = score;
+            state.completed[qId] = true;
+            
+            // Visual indicators of completion
+            const card = document.getElementById('card-' + qId);
+            card.classList.remove('border-slate-200');
+            card.classList.add('border-green-300', 'bg-green-50/10');
+            
+            updateMetrics();
+        }
+
+        // Section 2: Multiple Choice Logic
+        function checkMultipleChoice(qId, selectedOption, isCorrect) {
+            if (state.completed[qId]) return; // Allow only one submission for assessment integrity
+
+            state.completed[qId] = true;
+            state.scores[qId] = isCorrect ? 1.0 : 0.0;
+
+            const buttons = document.querySelectorAll('.opt-btn-' + qId);
+            buttons.forEach(btn => {
+                // Disable to avoid changing answers
+                btn.disabled = true;
+                if (btn.innerText.trim().startsWith(selectedOption)) {
+                    if (isCorrect) {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border-2 border-green-500 bg-green-50 text-green-800 text-xs font-bold transition-all flex items-center justify-between";
+                        btn.querySelector('i').className = "fa-solid fa-circle-check text-green-600";
+                    } else {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-800 text-xs font-bold transition-all flex items-center justify-between";
+                        btn.querySelector('i').className = "fa-solid fa-circle-xmark text-red-600";
+                    }
+                } else if (btn.innerText.trim().startsWith('C') && qId === 'q11') {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                } else if (btn.innerText.trim().startsWith('A') && qId === 'q12') {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                } else if (btn.innerText.trim().startsWith('C') && qId === 'q13') {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                } else if (btn.innerText.trim().startsWith('C') && qId === 'q14') {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                } else if (btn.innerText.trim().startsWith('B') && qId === 'q15') {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                }
+            });
+
+            // Show explanation
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            updateMetrics();
+        }
+
+        // Section 3: True / False Logic
+        function checkTF(qId, chosen, actualCorrect) {
+            if (state.completed[qId]) return;
+
+            state.completed[qId] = true;
+            const isCorrect = (chosen === actualCorrect);
+            state.scores[qId] = isCorrect ? 1.0 : 0.0;
+
+            const tBtn = document.querySelector('.btn-t-' + qId);
+            const fBtn = document.querySelector('.btn-f-' + qId);
+
+            tBtn.disabled = true;
+            fBtn.disabled = true;
+
+            if (chosen === true) {
+                if (isCorrect) {
+                    tBtn.className = "px-5 py-2.5 rounded-xl border-2 border-green-500 bg-green-50 text-green-700 text-xs font-bold transition-all";
+                } else {
+                    tBtn.className = "px-5 py-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold transition-all";
+                }
+            } else {
+                if (isCorrect) {
+                    fBtn.className = "px-5 py-2.5 rounded-xl border-2 border-green-500 bg-green-50 text-green-700 text-xs font-bold transition-all";
+                } else {
+                    fBtn.className = "px-5 py-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold transition-all";
+                }
+            }
+
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            updateMetrics();
+        }
+
+        // Live calculation and UI updates
+        function updateMetrics() {
+            // Calculate scores
+            let scoreBlock1 = 0;
+            let countBlock1 = 0;
+            for (let i = 1; i <= 10; i++) {
+                scoreBlock1 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock1++;
+            }
+
+            let scoreBlock2 = 0;
+            let countBlock2 = 0;
+            for (let i = 11; i <= 15; i++) {
+                scoreBlock2 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock2++;
+            }
+
+            let scoreBlock3 = 0;
+            let countBlock3 = 0;
+            for (let i = 16; i <= 20; i++) {
+                scoreBlock3 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock3++;
+            }
+
+            const totalScore = scoreBlock1 + scoreBlock2 + scoreBlock3;
+            const completedCount = countBlock1 + countBlock2 + countBlock3;
+            const totalPercent = (completedCount / 20) * 100;
+
+            // Update UI elements
+            document.getElementById('score-display').innerText = totalScore.toFixed(1);
+            document.getElementById('score-block-1').innerText = scoreBlock1.toFixed(1) + " / 10";
+            document.getElementById('score-block-2').innerText = scoreBlock2 + " / 5";
+            document.getElementById('score-block-3').innerText = scoreBlock3 + " / 5";
+
+            document.getElementById('badge-d').innerText = countBlock1 + "/10";
+            document.getElementById('badge-o').innerText = countBlock2 + "/5";
+            document.getElementById('badge-vf').innerText = countBlock3 + "/5";
+
+            document.getElementById('global-progress').style.width = totalPercent + "%";
+            document.getElementById('progress-text').innerText = completedCount + " / 20 Resueltas";
+
+            // Update Clinical Rank Badge
+            const rankBadge = document.getElementById('rank-badge');
+            if (totalScore >= 18) {
+                rankBadge.innerText = "Médico Internista";
+                rankBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800";
+            } else if (totalScore >= 14) {
+                rankBadge.innerText = "Médico Residente";
+                rankBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-100 text-clinical-800";
+            } else if (totalScore >= 8) {
+                rankBadge.innerText = "Estudiante Clínico";
+                rankBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800";
+            } else {
+                rankBadge.innerText = "Iniciado Clínico";
+                rankBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
+            }
+
+            // Unlock report if all 20 are resolved
+            if (completedCount === 20) {
+                document.getElementById('badge-rep').innerHTML = '<i class="fa-solid fa-check-double text-green-500"></i>';
+            }
+        }
+
+        // Diagnostics generation
+        function updateReport() {
+            let scoreB1 = 0;
+            let scoreB2 = 0;
+            let scoreB3 = 0;
+            for (let i = 1; i <= 10; i++) scoreB1 += state.scores['q' + i];
+            for (let i = 11; i <= 15; i++) scoreB2 += state.scores['q' + i];
+            for (let i = 16; i <= 20; i++) scoreB3 += state.scores['q' + i];
+
+            const finalScore = scoreB1 + scoreB2 + scoreB3;
+
+            document.getElementById('report-score').innerText = finalScore.toFixed(1) + " / 20.0";
+            document.getElementById('rep-b1').innerText = scoreB1.toFixed(1) + " / 10";
+            document.getElementById('rep-b2').innerText = scoreB2 + " / 5";
+            document.getElementById('rep-b3').innerText = scoreB3 + " / 5";
+
+            // Determine diagnostic texts
+            let evalText = "";
+            let recs = [];
+
+            if (finalScore >= 18) {
+                evalText = "Excelente dominio clínico y bioquímico. Muestras un razonamiento médico de alta precisión digno de un posgrado en medicina crítica.";
+                recs = [
+                    "Continúa profundizando en las bases biofísicas de la osmolaridad efectiva y osmoles no medidos.",
+                    "Revisa artículos recientes sobre la tasa de corrección del sodio plasmático en pacientes críticamente descompensados para prevenir la desmielinización osmótica.",
+                    "Domina a la perfección el cálculo de osmolaridad plasmática medida: $2\text{Na}^+ + \text{Glucosa}/18 + \text{BUN}/2.8$."
+                ];
+            } else if (finalScore >= 14) {
+                evalText = "Buen rendimiento clínico. Tienes claros los conceptos básicos de distribución de fluidos, pero requieres pulir los detalles finos de la termodinámica mitocondrial y la física molecular.";
+                recs = [
+                    "Refuerza la diferencia de polaridad entre glucógeno e hidratos de carbono frente a lípidos anhidros.",
+                    "Repasa el papel de los agentes desacoplantes como el DNP y por qué exacerban las pérdidas insensibles de agua pulmonares y sudoríparas.",
+                    "Asegura la distinción entre diuresis osmótica e infusión de soluciones hipertónicas."
+                ];
+            } else {
+                evalText = "Se requiere revisión urgente de los temas fisiopatológicos esenciales. Se aconseja repasar la bioquímica detrás del equilibrio hídrico celular.";
+                recs = [
+                    "Estudia la diferencia fundamental entre osmolaridad y tonicidad de las soluciones fisiológicas.",
+                    "Comprende el mecanismo de diuresis osmótica renal por saturación de los transportadores SGLT-2.",
+                    "Recuerda que el agua corporal se desplaza siempre de menor a mayor concentración de solutos (ósmosis a favor del potencial químico)."
+                ];
+            }
+
+            document.getElementById('report-eval-text').innerText = evalText;
+
+            // Generate Recommendations list
+            const recList = document.getElementById('recommendations-list');
+            recList.innerHTML = "";
+            recs.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerText = rec;
+                recList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
