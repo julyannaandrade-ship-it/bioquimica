@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluciones y Cálculos Clínicos - Simulador Interactivo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuración e Importación de MathJax para renderizar LaTeX perfectamente en el cliente -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clinical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        neutralSlate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Estilos de Scrollbar Personalizada y Animaciones Suaves -->
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Header Principal de la Plataforma -->
+    <header class="bg-gradient-to-r from-clinical-900 to-clinical-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm shadow-inner">
+                    <i class="fa-solid fa-calculator text-teal-300 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Soluciones y Cálculos Clínicos</h1>
+                    <p class="text-xs text-teal-100/80">Laboratorio Interactivo de Farmacología y Fisiopatología Aplicada</p>
+                </div>
+            </div>
+            <!-- Progress Tracker -->
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <div class="w-full sm:w-48 bg-slate-800/80 h-2.5 rounded-full overflow-hidden border border-white/5">
+                    <div id="global-progress" class="bg-teal-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span class="text-sm font-semibold whitespace-nowrap text-teal-50" id="progress-text">0 / 20 Resueltas</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal en Grid -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Barra Lateral Izquierda: Navegación y Calificación -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <!-- Panel de Competencia y Rango Clínico -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Panel de Competencia</h2>
+                <div class="flex items-baseline gap-2 mb-1.5">
+                    <span class="text-4xl font-black text-clinical-800 tracking-tight" id="score-display">0.0</span>
+                    <span class="text-slate-400 text-sm">/ 20.0 Puntos</span>
+                </div>
+                <div class="mb-4">
+                    <div class="text-[11px] font-bold text-slate-500 uppercase mb-1">Rango Académico:</div>
+                    <span id="rank-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Clínico Novicio
+                    </span>
+                </div>
+                <div class="border-t border-slate-100 pt-4 space-y-2.5">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Bloque Desarrollo (10):</span>
+                        <span id="score-block-1" class="font-bold text-slate-700">0.0 / 10</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Bloque Opciones (5):</span>
+                        <span id="score-block-2" class="font-bold text-slate-700">0 / 5</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Bloque Verdadero/Falso (5):</span>
+                        <span id="score-block-3" class="font-bold text-slate-700">0 / 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación Rápida entre Secciones -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 sticky top-24">
+                <nav class="space-y-1.5">
+                    <button onclick="switchTab('block-desarrollo')" id="btn-block-desarrollo" class="nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all bg-clinical-50 text-clinical-800 border-l-4 border-clinical-600">
+                        <span><i class="fa-solid fa-receipt mr-2.5"></i>1. Análisis y Cálculos</span>
+                        <span class="bg-clinical-100 text-clinical-800 text-xs px-2 py-0.5 rounded-full font-bold" id="badge-d">0/10</span>
+                    </button>
+                    <button onclick="switchTab('block-opciones')" id="btn-block-opciones" class="nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-list-check mr-2.5"></i>2. Opción Múltiple</span>
+                        <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold" id="badge-o">0/5</span>
+                    </button>
+                    <button onclick="switchTab('block-vf')" id="btn-block-vf" class="nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-circle-check mr-2.5"></i>3. Verdadero / Falso</span>
+                        <span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold" id="badge-vf">0/5</span>
+                    </button>
+                    <button onclick="switchTab('block-report')" id="btn-block-report" class="nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50">
+                        <span><i class="fa-solid fa-chart-line mr-2.5"></i>4. Diagnóstico Académico</span>
+                        <span class="bg-slate-100 text-slate-500 text-xs px-1.5 py-0.5 rounded" id="badge-rep"><i class="fa-solid fa-lock"></i></span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Contenedor Central del Espacio de Trabajo -->
+        <div class="lg:col-span-3">
+            
+            <!-- BLOQUE 1: DESARROLLO Y ANÁLISIS CLÍNICO -->
+            <div id="block-desarrollo" class="tab-content space-y-6">
+                <div class="bg-gradient-to-r from-clinical-600 to-clinical-800 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1.5"><i class="fa-solid fa-vial-medical mr-2.5"></i>Sección 1: Casos de Desarrollo y Cálculos Clínicos</h2>
+                    <p class="text-sm text-teal-50">Resuelve las preguntas de cada caso y escribe tu respuesta. Luego, revela el informe detallado para calificar trabajo.</p>
+                </div>
+
+                <!-- Pregunta 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q1">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 1 &bull; ESTEQUIOMETRÍA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-001</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">1. Cálculo de Moles y Osmoles (Solución Hipotónica):</span> Al final del tratamiento, se le suministró a Julia $3\text{ L}$ de solución salina hipotónica al $0,45\text{ g\%}$. Sabiendo que el peso molecular del $\text{NaCl}$ es $58\text{ g/mol}$, ¿cuántos moles de $\text{NaCl}$ recibió exactamente? ¿Y cuántos osmoles, asumiendo su disociación completa?
+                    </h3>
+                    <textarea id="ans-q1" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Ingresa los cálculos matemáticos paso a paso aquí..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q1')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q1" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q1', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q1', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q1" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Cálculo de Masa):</strong> La concentración $0,45\text{ g\%}$ significa que hay $0,45\text{ g}$ de $\text{NaCl}$ en $100\text{ mL}$. Para $3\text{ L}$ ($3000\text{ mL}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Masa de NaCl} = \frac{0,45\text{ g}}{100\text{ mL}} \times 3000\text{ mL} = 13,5\text{ g de NaCl}$$</p>
+                            <p><strong>Paso 2 (Cálculo de Moles):</strong> Utilizando la masa molecular provista de $58\text{ g/mol}$:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Moles de NaCl} = \frac{13,5\text{ g}}{58\text{ g/mol}} \approx 0,2328\text{ mol (o } 232,8\text{ mmol)}$$</p>
+                            <p><strong>Paso 3 (Cálculo de Osmoles):</strong> El $\text{NaCl}$ se disocia completamente en dos partículas osmóticamente activas ($\text{Na}^+$ y $\text{Cl}^-$), por ende, su coeficiente de van 't Hoff es $i = 2$:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Osmoles de NaCl} = 0,2328\text{ mol} \times 2 \approx 0,4656\text{ Osm (o } 465,6\text{ mOsm)}$$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q2">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 2 &bull; FLUIDOTERAPIA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-002</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">2. Fluidoterapia y Cálculo de Volumen:</span> Se decide administrar a Martín solución fisiológica ($\text{NaCl } 0,9\text{ \% m/V}$) a razón de $30\text{ mL/kg}$. Si el paciente pesa $95\text{ kg}$ y cada bolsa hospitalaria contiene $500\text{ mL}$, ¿qué volumen total de solución debe recibir y cuántas bolsas completas se necesitan?
+                    </h3>
+                    <textarea id="ans-q2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo de dosis y bolsas aquí..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q2')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q2" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q2', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q2', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q2" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Cálculo del Volumen Requerido):</strong> Aplicamos la dosis de fluidoterapia por kg de masa corporal del paciente:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Volumen Total} = 30\text{ mL/kg} \times 95\text{ kg} = 2850\text{ mL (o } 2,85\text{ L)}$$</p>
+                            <p><strong>Paso 2 (Cálculo del Número de Bolsas):</strong> Dividimos el volumen requerido por la capacidad unitaria de la bolsa comercial ($500\text{ mL}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Cantidad de bolsas} = \frac{2850\text{ mL}}{500\text{ mL/bolsa}} = 5,7\text{ bolsas}$$</p>
+                            <p><strong>Conclusión Clínica:</strong> Se requieren administrar 5 bolsas completas de $500\text{ mL}$ y $350\text{ mL}$ de una sexta bolsa. Por lo tanto, el servicio de enfermería necesitará disponer de <strong>6 bolsas hospitalarias en total</strong> para cumplir con la pauta de hidratación.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 3 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q3">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 3 &bull; CONVERSIÓN QUÍMICA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-003</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">3. Conversión de Unidades (Glucosa):</span> Los análisis de Martín muestran una glucosa de $7,0\text{ mM}$. Sabiendo que el peso molecular ($\text{PM}$) de la glucosa es $180\text{ g/mol}$, calcula la concentración en $\text{mg/dL}$ e indica si se encuentra dentro de los valores de referencia ($70\text{–}110\text{ mg/dL}$).
+                    </h3>
+                    <textarea id="ans-q3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo de conversión y tu análisis clínico..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q3')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q3" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q3', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q3', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q3" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Conversión de mM a g/L):</strong> $7,0\text{ mM} = 7,0\text{ mmol/L}$. Multiplicamos por el $\text{PM}$ de $180\text{ g/mol}$ (o $180\text{ mg/mmol}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Concentración} = 7,0\text{ mmol/L} \times 180\text{ mg/mmol} = 1260\text{ mg/L}$$</p>
+                            <p><strong>Paso 2 (Conversión de L a dL):</strong> Sabiendo que $1\text{ L} = 10\text{ dL}$:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Concentración} = \frac{1260\text{ mg}}{10\text{ dL}} = 126\text{ mg/dL}$$</p>
+                            <p><strong>Interpretación Clínica:</strong> El valor de $126\text{ mg/dL}$ se encuentra por encima del rango de referencia fisiológico normal ($70\text{–}110\text{ mg/dL}$), lo que califica técnicamente como **hiperglucemia** y cumple con los criterios de alarma para sospecha o confirmación diagnóstica de diabetes mellitus.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 4 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q4">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 4 &bull; CONVERSIÓN DE UREA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-004</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">4. Conversión de Unidades (Urea):</span> Convierte la concentración de urea de $6,0\text{ mM}$ a $\text{mg/dL}$, utilizando su $\text{PM}$ de $60\text{ g/mol}$. Compara el resultado con los valores normales ($15\text{–}40\text{ mg/dL}$) para determinar si están alterados.
+                    </h3>
+                    <textarea id="ans-q4" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo de conversión de la urea aquí..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q4')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Reveal Resolución Médica
+                        </button>
+                        <div id="eval-q4" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q4', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q4', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q4" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Conversión de concentración molar a masa):</strong> $6,0\text{ mM} = 6,0\text{ mmol/L}$. Multiplicamos por su peso molecular ($60\text{ mg/mmol}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Concentración} = 6,0\text{ mmol/L} \times 60\text{ mg/mmol} = 360\text{ mg/L}$$</p>
+                            <p><strong>Paso 2 (Conversión de L a dL):</strong> Dividimos por 10 (puesto que $1\text{ L} = 10\text{ dL}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Concentración} = \frac{360\text{ mg}}{10\text{ dL}} = 36\text{ mg/dL}$$</p>
+                            <p><strong>Interpretación Clínica:</strong> La concentración obtenida de $36\text{ mg/dL}$ se encuentra perfectamente dentro de los valores de referencia fisiológicos normales ($15\text{–}40\text{ mg/dL}$), indicando un aclaramiento de compuestos nitrogenados no proteicos dentro de la normalidad.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 5 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q5">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 5 &bull; TOXICOLOGÍA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-005</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">5. Dosificación Toxicológica (mg/kg):</span> Martín, de $95\text{ kg}$, ingirió 14 cápsulas de $200\text{ mg}$ de un quemador de grasa ($2,4\text{-DNP}$). Calcula con el procedimiento detallado la dosis exacta que recibió expresada en $\text{mg/kg}$.
+                    </h3>
+                    <textarea id="ans-q5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo de dosificación toxicológica aquí..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q5')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q5" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q5', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q5', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q5" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Cálculo de la Dosis Absoluta):</strong> Multiplicamos las cápsulas ingeridas por la dosis de cada una:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Dosis Total} = 14\text{ cápsulas} \times 200\text{ mg/cápsula} = 2800\text{ mg de } 2,4\text{-DNP}$$</p>
+                            <p><strong>Paso 2 (Cálculo de la Dosis por Peso):</strong> Dividimos la dosis total por la masa corporal de Martín ($95\text{ kg}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Dosis en mg/kg} = \frac{2800\text{ mg}}{95\text{ kg}} \approx 29,47\text{ mg/kg}$$</p>
+                            <p><strong>Implicancia Médica:</strong> Una dosis de $29,47\text{ mg/kg}$ es extremadamente peligrosa y potencialmente letal. El $2,4\text{-DNP}$ desacopla la fosforilación oxidativa, disparando una termogénesis incontrolada difícil de combatir clínicamente.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 6 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q6">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 6 &bull; POSOLOGÍA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-006</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">6. Posología y Fraccionamiento (Ácido Valproico):</span> Es necesario administrar ácido valproico a una dosis máxima de $15\text{ miligramos por kilo por día}$ a un paciente de $75\text{ kg}$. ¿Cuántos miligramos deberá tomar el paciente por dosis si se le indica tomarlo cada 8 horas?
+                    </h3>
+                    <textarea id="ans-q6" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo de dosis y tomas de Ácido Valproico..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q6')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q6" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q6', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q6', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q6" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Cálculo de la Dosis Diaria Absoluta):</strong> Multiplicamos el peso del paciente por la dosis prescrita:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Dosis Diaria} = 15\text{ mg/kg/día} \times 75\text{ kg} = 1125\text{ mg/día}$$</p>
+                            <p><strong>Paso 2 (Fraccionamiento cada 8 horas):</strong> Una administración cada 8 horas se traduce en exactamente 3 tomas diarias ($24 / 8 = 3$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Dosis por Toma} = \frac{1125\text{ mg/día}}{3\text{ tomas}} = 375\text{ mg por dosis}$$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 7 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q7">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 7 &bull; BIOFÍSICA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-007</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">7. Osmolaridad de Soluciones:</span> Calcula la osmolaridad aproximada de la solución fisiológica ($\text{NaCl } 0,9\text{ \% m/V}$) utilizando un $\text{PM}$ para el $\text{NaCl}$ de $58,5\text{ g/mol}$, y justifica fisiológicamente por qué es apropiado administrarla en un paciente deshidratado.
+                    </h3>
+                    <textarea id="ans-q7" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Explica tus cálculos fisicoquímicos y la pertinencia biológica..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q7')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q7" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q7', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q7', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q7" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Determinar g/L):</strong> Una solución de $\text{NaCl } 0,9\text{ \% m/V}$ contiene $0,9\text{ g}$ de soluto en $100\text{ mL}$, lo que equivale a $9\text{ g}$ en $1\text{ L}$ ($1000\text{ mL}$).</p>
+                            <p><strong>Paso 2 (Convertir a molaridad):</strong> Dividimos por la masa molecular provista ($58,5\text{ g/mol}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Molaridad} = \frac{9\text{ g/L}}{58,5\text{ g/mol}} \approx 0,1538\text{ mol/L (o } 153,8\text{ mmol/L)}$$</p>
+                            <p><strong>Paso 3 (Calcular la osmolaridad):</strong> Debido a que el $\text{NaCl}$ se disocia completamente en dos iones ($\text{Na}^+$ y $\text{Cl}^-$) en medio acuoso ($i = 2$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Osmolaridad} = 153,8\text{ mmol/L} \times 2 \approx 307,6\text{ mOsm/L (aprox. } 308\text{ mOsm/L)}$$</p>
+                            <p><strong>Justificación Fisiológica:</strong> Este valor se aproxima mucho a la osmolaridad fisiológica normal del plasma humano ($275\text{–}295\text{ mOsm/L}$). Al ser una solución isotónica, su administración expande efectivamente el volumen plasmático sin crear gradientes osmóticos dañinos para el eritrocito.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 8 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q8">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 8 &bull; NUTRICIÓN Y METABOLISMO</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-008</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">8. Aporte Calórico de Soluciones:</span> Durante la fiebre, aumentan los requerimientos energéticos. Si se administran $3\text{ litros}$ de una solución con dextrosa (glucosa) al $5\text{ \% (m/V)}$, ¿cuántos gramos totales de glucosa recibe el paciente y cuántas kilocalorías le aporta? ($1\text{ g}$ de glucosa = $4\text{ kcal}$).
+                    </h3>
+                    <textarea id="ans-q8" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Escribe el cálculo energético aquí..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q8')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q8" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q8', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q8', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q8" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Calcular gramos de glucosa):</strong> El término $5\text{ \% m/V}$ representa que se contienen $5\text{ g}$ de glucosa por cada $100\text{ mL}$ de volumen. Para $3\text{ L}$ ($3000\text{ mL}$):</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Gramos de glucosa} = \frac{5\text{ g}}{100\text{ mL}} \times 3000\text{ mL} = 150\text{ g de glucosa}$$</p>
+                            <p><strong>Paso 2 (Calcular aporte calórico):</strong> Como $1\text{ g}$ de glucosa aporta $4\text{ kcal}$ de energía metabólica disponible:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Energía total} = 150\text{ g} \times 4\text{ kcal/g} = 600\text{ kcal}$$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 9 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q9">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 9 &bull; FISIOPATOLOGÍA</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-009</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">9. Interpretación de Tonicidad:</span> Explica bioquímicamente qué significa el término "hipotónica" en el contexto de la solución salina al $0,45\text{ g\%}$ y justifica por qué a una paciente con $340\text{ mOsm/L}$ de osmolaridad plasmática se le da esta solución y no una isotónica.
+                    </h3>
+                    <textarea id="ans-q9" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="3" placeholder="Escribe tu justificación clínica basada en el balance osmótico..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q9')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q9" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q9', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q9', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q9" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <p class="text-xs text-slate-700 leading-relaxed mb-2">
+                            El término <strong>"hipotónica"</strong> significa que el fluido tiene una concentración de solutos osmóticamente activos menor que la del plasma normal. La solución al $0,45\%$ posee una osmolaridad de aproximadamente $154\text{ mOsm/L}$, comparada con los $\sim 290\text{ mOsm/L}$ del plasma sano.
+                        </p>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            <strong>Justificación Fisiopatológica:</strong> La paciente ingresa en un estado de hiperosmolaridad plasmática severa ($340\text{ mOsm/L}$), lo que significa que el agua libre ha migrado desde el interior de sus células hacia el compartimento extracelular para compensar, deshidratando críticamente las células. Si se administrara solución salina isotónica ($0,9\text{\%}$), se expandiría el espacio extracelular pero se mantendría la hiperosmolaridad nociva. Al administrar la solución al $0,45\text{\%}$, se diluye el plasma y se crea una fuerza osmótica que permite el **reingreso de agua libre al citosol celular**, rehidratando las células afectadas.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pregunta 10 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md" id="card-q10">
+                    <div class="flex justify-between items-start gap-4 mb-4">
+                        <span class="bg-clinical-100 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 10 &bull; ÁCIDO-BASE</span>
+                        <span class="text-xs text-slate-400 font-mono">ID: CALC-010</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                        <span class="text-clinical-700 font-bold">10. Cálculo de Brecha Aniónica (Anion Gap):</span> Con los datos del ionograma de Martín ($\text{Na}^+ 142\text{ mEq/L}$, $\text{Cl}^- 102\text{ mEq/L}$ y $\text{HCO}_3^- 15\text{ mEq/L}$), calcula el Anión Gap. ¿Qué información brinda este cálculo en un contexto de acidosis metabólica?
+                    </h3>
+                    <textarea id="ans-q10" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400 font-mono" rows="3" placeholder="Calcula la brecha aniónica y escribe tu diagnóstico clínico..."></textarea>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                        <button onclick="revealFeedback('q10')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Resolución Médica
+                        </button>
+                        <div id="eval-q10" class="hidden flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                            <button onclick="setSelfScore('q10', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                            <button onclick="setSelfScore('q10', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                        </div>
+                    </div>
+
+                    <div id="fb-q10" class="hidden mt-5 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                        <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-notes-medical mr-1.5"></i> Protocolo de Resolución y Análisis</h4>
+                        <div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Paso 1 (Aplicar Fórmula de Anion Gap):</strong> La brecha aniónica calcula los aniones plasmáticos no medidos habitualmente:</p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Anión Gap} = [\text{Na}^+] - ([\text{Cl}^-] + [\text{HCO}_3^-])$$</p>
+                            <p><strong>Paso 2 (Sustituir Valores):</strong></p>
+                            <p class="font-mono bg-white/60 p-2 rounded border border-slate-200 inline-block">$$\text{Anión Gap} = 142 - (102 + 15) = 142 - 117 = 25\text{ mEq/L}$$</p>
+                            <p><strong>Interpretación Clínica:</strong> El valor calculado ($25\text{ mEq/L}$) se encuentra significativamente por encima del rango fisiológico estándar ($8\text{–}12\text{ mEq/L}$), clasificando el cuadro como una **acidosis metabólica de brecha aniónica elevada** (HAGMA). Esto confirma la acumulación patológica de ácidos orgánicos fijos (como lactato o cuerpos cetónicos) en el plasma.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de Navegación del Bloque -->
+                <div class="flex justify-end pt-4">
+                    <button onclick="switchTab('block-opciones')" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3.5 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Siguiente Sección (Opción Múltiple) <i class="fa-solid fa-circle-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: OPCIÓN MÚLTIPLE -->
+            <div id="block-opciones" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-teal-600 to-clinical-600 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1.5"><i class="fa-solid fa-list-check mr-2.5"></i>Sección 2: Test Académico de Opción Múltiple</h2>
+                    <p class="text-sm text-teal-50">Selecciona la única opción correcta. El sistema computará tu puntuación y mostrará las retroalimentaciones correspondientes de manera inmediata.</p>
+                </div>
+
+                <!-- Pregunta 11 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q11">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">PREGUNTA 11 &bull; LACTATO</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
+                        Los análisis de guardia de un paciente muestran un valor de lactato de $4,5\text{ mM}$. Considerando que el $\text{PM}$ del lactato es $90\text{ g/mol}$, su concentración en $\text{mg/dL}$ es:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q11', 'A', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) $4,5\text{ mg/dL}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'B', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) $405\text{ mg/dL}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'C', true)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) $40,5\text{ mg/dL}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q11', 'D', false)" class="opt-btn-q11 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) $0,45\text{ mg/dL}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q11" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600 leading-relaxed">
+                        <strong>Justificación Científica:</strong> $4,5\text{ mM} = 4,5\text{ mmol/L}$. Multiplicamos por $90\text{ mg/mmol} = 405\text{ mg/L}$. Dividimos por 10 (puesto que $1\text{ L} = 10\text{ dL}$) para obtener la unidad de decilitros, resultando en $40,5\text{ mg/dL}$.
+                    </div>
+                </div>
+
+                <!-- Pregunta 12 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q12">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">PREGUNTA 12 &bull; COMPOSICIÓN DE SOLUTOS</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
+                        En la guardia hospitalaria, las bolsas de suero fisiológico ($\text{NaCl } 0,9\text{ \% m/V}$) contienen $500\text{ mL}$. ¿Cuántos gramos de $\text{NaCl}$ hay en el interior de **UNA** bolsa completa?
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q12', 'A', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) $0,9\text{ g}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'B', true)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) $4,5\text{ g}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'C', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) $9,0\text{ g}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q12', 'D', false)" class="opt-btn-q12 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) $45\text{ g}$</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q12" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600 leading-relaxed">
+                        <strong>Justificación Científica:</strong> $0,9\text{ \% m/V}$ representa $0,9\text{ g}$ de $\text{NaCl}$ por cada $100\text{ mL}$ de solución. Para una bolsa estándar de $500\text{ mL}$, se tiene: $\frac{0,9\text{ g}}{100\text{ mL}} \times 500\text{ mL} = 4,5\text{ g}$ de soluto activo.
+                    </div>
+                </div>
+
+                <!-- Pregunta 13 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q13">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">PREGUNTA 13 &bull; NOMENCLATURA</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
+                        A Julia se le administró "solución salina hipotónica al $0,45\text{ g\%}$". El valor "$0,45\text{ g\%}$" significa que la solución contiene:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q13', 'A', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) $0,45\text{ moles de NaCl}$ en $1\text{ Litro}$ de solución.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'B', true)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) $0,45\text{ gramos de NaCl}$ por cada $100\text{ mililitros}$ de solución.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'C', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) $0,45\text{ equivalentes de sodio}$ por cada litro de agua.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q13', 'D', false)" class="opt-btn-q13 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) $0,45\text{ miligramos de NaCl}$ por cada decilitro de solución.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q13" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600 leading-relaxed">
+                        <strong>Justificación Científica:</strong> El sufijo porcentual masa en volumen ($\text{\% m/V}$ o simplemente $\text{g\%}$) es una unidad de concentración estándar que expresa la cantidad de gramos de soluto disueltos por cada $100\text{ mL}$ de solución final.
+                    </div>
+                </div>
+
+                <!-- Pregunta 14 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q14">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">PREGUNTA 14 &bull; IONIZACIÓN</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
+                        Para realizar un cálculo correcto de osmolaridad teórica a partir de una solución de $\text{NaCl}$, es fundamental recordar que el Cloruro de Sodio:
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q14', 'A', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) Es una molécula no polar que no aporta osmoles.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'B', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) Genera $1\text{ osmol}$ por cada mol de $\text{NaCl}$ disuelto.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'C', true)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) Se disocia completamente en $\text{Na}^+$ y $\text{Cl}^-$, por lo que $1\text{ mol}$ de $\text{NaCl}$ genera aproximadamente $2\text{ osmoles}$.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q14', 'D', false)" class="opt-btn-q14 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) Se une a las proteínas plasmáticas perdiendo su capacidad osmótica.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q14" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600 leading-relaxed">
+                        <strong>Justificación Científica:</strong> Dado que el $\text{NaCl}$ es un electrolito fuerte, se disocia por completo en agua liberando cationes de sodio ($\text{Na}^+$) y aniones de cloruro ($\text{Cl}^-$). La osmolaridad mide las partículas en solución, por lo que su factor osmótico se duplica ($i=2$).
+                    </div>
+                </div>
+
+                <!-- Pregunta 15 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q15">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">PREGUNTA 15 &bull; VOLUMEN EFECTIVO</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-900 mb-4 leading-relaxed">
+                        Un paciente tiene un volumen plasmático reducido y se decide administrarle $\text{NaCl } 0,9\text{\%}$. ¿Cuál de las siguientes afirmaciones sobre esta solución es correcta?
+                    </p>
+                    <div class="space-y-2.5">
+                        <button onclick="checkMultipleChoice('q15', 'A', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>A) Es hipertónica y provocará crenación (contracción) de los eritrocitos.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'B', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>B) Contiene $9\text{ gramos}$ de $\text{NaCl}$ por cada $100\text{ mL}$ de agua.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'C', true)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>C) Su osmolaridad ronda los $308\text{ mOsm/L}$, lo que la hace isotónica respecto al plasma normal.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                        <button onclick="checkMultipleChoice('q15', 'D', false)" class="opt-btn-q15 w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-all flex items-center justify-between">
+                            <span>D) Aporta únicamente energía libre y agua, sin alterar los electrolitos.</span>
+                            <i class="fa-regular fa-circle text-slate-300"></i>
+                        </button>
+                    </div>
+                    <div id="fb-q15" class="hidden mt-4 p-4 bg-slate-50 rounded-xl text-xs text-slate-600 leading-relaxed">
+                        <strong>Justificación Científica:</strong> Su osmolaridad teórica es de $308\text{ mOsm/L}$, muy compatible con la osmolaridad de las membranas celulares y el plasma humano. Se considera de tonicidad neutra (isotónica), por lo que expande el compartimento extracelular de forma segura.
+                    </div>
+                </div>
+
+                <!-- Botones de Navegación del Bloque -->
+                <div class="flex justify-between pt-4">
+                    <button onclick="switchTab('block-desarrollo')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-circle-arrow-left"></i> Sección Anterior
+                    </button>
+                    <button onclick="switchTab('block-vf')" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Siguiente Sección (V / F) <i class="fa-solid fa-circle-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: VERDADERO O FALSO -->
+            <div id="block-vf" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1.5"><i class="fa-solid fa-circle-check mr-2.5"></i>Sección 3: Evaluación de Verdadero o Falso</h2>
+                    <p class="text-sm text-teal-50">Analiza críticamente las afirmaciones formuladas. En caso de ser falsas, es indispensable aportar la corrección y su fundamento bioquímico detallado.</p>
+                </div>
+
+                <!-- Pregunta 16 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q16">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">ENUNCIADO 16 &bull; CONVERSIÓN METÁBOLICA</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4 leading-relaxed">
+                        <strong>[ 16 ]</strong> Para convertir una concentración de glucosa de milimolar ($\text{mM}$) a $\text{mg/dL}$, se debe multiplicar el valor en $\text{mM}$ por el peso molecular ($180\text{ g/mol}$) y dividir el resultado por 10.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q16', true, true)" class="btn-t-q16 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q16', false, false)" class="btn-f-q16 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q16" class="hidden mt-4 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+                        <strong>Verdadero. Justificación Bioquímica:</strong> La unidad $\text{mM}$ es igual a $\text{mmol/L}$. Al multiplicar por el $\text{PM}$ de $180\text{ mg/mmol}$, obtenemos $\text{mg/L}$. Como $1\text{ L} = 10\text{ dL}$, dividir el resultado por 10 efectivamente completa la conversión a la unidad final de $\text{mg/dL}$.
+                    </div>
+                </div>
+
+                <!-- Pregunta 17 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q17">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">ENUNCIADO 17 &bull; FRACCIONAMIENTO</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4 leading-relaxed">
+                        <strong>[ 17 ]</strong> Si a un paciente de $75\text{ kg}$ se le prescribe una dosis máxima de ácido valproico de $15\text{ mg/kg/día}$ fraccionada cada 8 horas (3 tomas diarias), el paciente deberá recibir $375\text{ miligramos}$ exactos en cada toma.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q17', true, true)" class="btn-t-q17 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q17', false, false)" class="btn-f-q17 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q17" class="hidden mt-4 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+                        <strong>Verdadero. Justificación Bioquímica:</strong> El cálculo es lineal y exacto: $15\text{ mg/kg/día} \times 75\text{ kg} = 1125\text{ mg}$ requeridos por día. Dividido en tres tomas administradas cada 8 horas, resulta exactamente en $375\text{ mg}$ por toma ($\frac{1125}{3} = 375$).
+                    </div>
+                </div>
+
+                <!-- Pregunta 18 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q18">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">ENUNCIADO 18 &bull; OSMOLARIDAD CELULAR</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4 leading-relaxed">
+                        <strong>[ 18 ]</strong> La administración de solución hipotónica (ej. $\text{NaCl } 0,45\text{ g\%}$) a una paciente con hiperglucemia grave y osmolaridad plasmática de $340\text{ mOsm/L}$ (rango normal 275-295 mOsm) tiene como objetivo arrastrar agua desde el compartimento intracelular hacia la sangre para diluir la glucosa.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q18', true, false)" class="btn-t-q18 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q18', false, true)" class="btn-f-q18 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q18" class="hidden mt-4 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+                        <strong>Falso. Corrección Fisiológica:</strong> El objetivo de infundir la solución salina hipotónica al $0,45\text{ g\%}$ es **rehidratar el compartimento intracelular** del paciente, forzando al agua libre a desplazarse desde la sangre (LEC) hacia el interior de las células (LIC) que sufrieron una deshidratación severa por el gradiente osmótico creado por la hiperglucemia.
+                    </div>
+                </div>
+
+                <!-- Pregunta 19 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q19">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">ENUNCIADO 19 &bull; CONVERSIÓN DE DOSIS</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4 leading-relaxed">
+                        <strong>[ 19 ]</strong> Una cápsula de $2,4\text{-DNP}$ contiene $200\text{ mg}$. Si un paciente ingiere 14 cápsulas, la ingesta absoluta de la droga es de $2800\text{ gramos}$.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q19', true, false)" class="btn-t-q19 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q19', false, true)" class="btn-f-q19 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q19" class="hidden mt-4 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+                        <strong>Falso. Corrección Fisiológica:</strong> Existe un grave error de unidades de masa. $14 \times 200\text{ mg} = 2800\text{ mg}$. Al convertir miligramos a gramos, dividimos por 1000, resultando en exactamente **$2,8\text{ gramos}$** de ingesta absoluta, no 2800 gramos (lo cual representaría 2,8 kg de compuesto activo, una cantidad masiva inverosímil).
+                    </div>
+                </div>
+
+                <!-- Pregunta 20 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all" id="card-q20">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">ENUNCIADO 20 &bull; ÁCIDO-BASE</span>
+                        <span class="text-xs text-slate-400 font-mono">1.0 PT</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-800 mb-4 leading-relaxed">
+                        <strong>[ 20 ]</strong> El cálculo del Anión Gap (Brecha Aniónica) se realiza sumando las concentraciones de los cationes medidos ($\text{Na}^+$ y $\text{K}^+$) y restándole los aniones medidos ($\text{Cl}^-$ y $\text{HCO}_3^-$). Este valor es fundamental para diagnosticar y subclasificar las alcalosis respiratorias.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="checkTF('q20', true, false)" class="btn-t-q20 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            VERDADERO
+                        </button>
+                        <button onclick="checkTF('q20', false, true)" class="btn-f-q20 px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition-all">
+                            FALSO
+                        </button>
+                    </div>
+                    <div id="fb-q20" class="hidden mt-4 p-4 bg-teal-50/50 border-l-4 border-clinical-600 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+                        <strong>Falso. Corrección Fisiológica:</strong> Aunque el ion potasio puede incluirse opcionalmente, la ecuación convencional clínicamente útil es $[\text{Na}^+] - ([\text{Cl}^-] + [\text{HCO}_3^-])$. Lo más importante es que esta herramienta diagnóstica es el pilar de categorización en las **acidosis metabólicas** (para discernir si se debe a ganancia de ácidos orgánicos o pérdida de bicarbonato), no en las alcalosis respiratorias.
+                    </div>
+                </div>
+
+                <!-- Botones de Navegación del Bloque -->
+                <div class="flex justify-between pt-4">
+                    <button onclick="switchTab('block-opciones')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-circle-arrow-left"></i> Sección Anterior
+                    </button>
+                    <button onclick="switchTab('block-report')" id="finish-btn" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3.5 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                        Generar Diagnóstico Académico <i class="fa-solid fa-graduation-cap"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 4: CLINICAL REPORT -->
+            <div id="block-report" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-xl font-bold mb-1.5"><i class="fa-solid fa-chart-pie mr-2.5"></i>Informe de Desempeño Clínico y Diagnóstico de Competencias</h2>
+                    <p class="text-sm text-slate-300">Análisis pormenorizado de tus destrezas en cálculos analíticos médicos y biofísica de fluidos.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="text-center py-6">
+                        <div class="inline-flex items-center justify-center p-4 bg-clinical-50 text-clinical-600 rounded-full mb-4">
+                            <i class="fa-solid fa-stethoscope text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">Tu Puntuación Global</h3>
+                        <div class="text-5xl font-black text-clinical-700 mb-2" id="report-score">0.0 / 20.0</div>
+                        <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed" id="report-eval-text">
+                            Debes completar el simulador clínico en su totalidad para obtener el veredicto académico de competencias y tu plan de refuerzo.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6 mt-6">
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 1: Cálculos</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b1">0.0 / 10</div>
+                            <p class="text-[11px] text-slate-500 mt-1 leading-normal">Habilidad para realizar conversiones de unidades y dosificación precisa.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 2: Test</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b2">0 / 5</div>
+                            <p class="text-[11px] text-slate-500 mt-1 leading-normal">Resolución rápida y asertiva de problemas de opción múltiple.</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl">
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Bloque 3: V / F</div>
+                            <div class="text-xl font-bold text-slate-800" id="rep-b3">0 / 5</div>
+                            <p class="text-[11px] text-slate-500 mt-1 leading-normal">Detección de incongruencias y razonamientos erróneos habituales.</p>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Recommendations -->
+                    <div class="mt-6 border-t border-slate-100 pt-6">
+                        <h4 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-file-waveform mr-2 text-clinical-600"></i>Recomendaciones Académicas</h4>
+                        <ul class="text-xs text-slate-600 space-y-2.5 list-disc pl-5 leading-relaxed" id="recommendations-list">
+                            <li>Completa todas las preguntas para ver tu informe de retroalimentación médica personalizada.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer de la cátedra -->
+    <footer class="bg-slate-150 border-t border-slate-200 py-4.5 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Cátedra de Bioquímica, Biofísica y Fisiología Aplicada. Diseñado con altos estándares pedagógicos de educación médica.</p>
+    </footer>
+
+    <!-- Lógica de Estado y Cálculo en JS -->
+    <script>
+        // Declaración del Estado de la Aplicación
+        const state = {
+            scores: {
+                q1: 0.0, q2: 0.0, q3: 0.0, q4: 0.0, q5: 0.0, q6: 0.0, q7: 0.0, q8: 0.0, q9: 0.0, q10: 0.0,
+                q11: 0, q12: 0, q13: 0, q14: 0, q15: 0,
+                q16: 0, q17: 0, q18: 0, q19: 0, q20: 0
+            },
+            completed: {
+                q1: false, q2: false, q3: false, q4: false, q5: false, q6: false, q7: false, q8: false, q9: false, q10: false,
+                q11: false, q12: false, q13: false, q14: false, q15: false,
+                q16: false, q17: false, q18: false, q19: false, q20: false
+            }
+        };
+
+        // Cambiar pestañas de navegación principal (Sin routing externo)
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all text-slate-600 hover:bg-slate-50";
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn w-full text-left px-4 py-3.5 rounded-xl font-medium text-sm flex items-center justify-between transition-all bg-clinical-50 text-clinical-800 border-l-4 border-clinical-600";
+            }
+
+            if (tabId === 'block-report') {
+                updateReport();
+            }
+
+            // Forzar a MathJax a re-procesar los elementos visibles tras el cambio de pestaña
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Bloque de Casos de Desarrollo: Mostrar Soluciones y Botones de Calificación
+        function revealFeedback(qId) {
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            document.getElementById('eval-' + qId).classList.remove('hidden');
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function setSelfScore(qId, score) {
+            state.scores[qId] = score;
+            state.completed[qId] = true;
+            
+            const card = document.getElementById('card-' + qId);
+            card.classList.remove('border-slate-200');
+            card.classList.add('border-clinical-600', 'bg-clinical-50/10');
+            
+            updateMetrics();
+        }
+
+        // Bloque de Opción Múltiple
+        function checkMultipleChoice(qId, selectedOption, isCorrect) {
+            if (state.completed[qId]) return;
+
+            state.completed[qId] = true;
+            state.scores[qId] = isCorrect ? 1.0 : 0.0;
+
+            const buttons = document.querySelectorAll('.opt-btn-' + qId);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.innerText.trim().startsWith(selectedOption)) {
+                    if (isCorrect) {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border-2 border-green-500 bg-green-50 text-green-800 text-xs font-bold transition-all flex items-center justify-between";
+                        btn.querySelector('i').className = "fa-solid fa-circle-check text-green-600";
+                    } else {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-800 text-xs font-bold transition-all flex items-center justify-between";
+                        btn.querySelector('i').className = "fa-solid fa-circle-xmark text-red-600";
+                    }
+                } else {
+                    // Revelar la respuesta correcta de forma pasiva
+                    const isCorrectAnswer = (
+                        (qId === 'q11' && btn.innerText.trim().includes('C)')) ||
+                        (qId === 'q12' && btn.innerText.trim().includes('B)')) ||
+                        (qId === 'q13' && btn.innerText.trim().includes('B)')) ||
+                        (qId === 'q14' && btn.innerText.trim().includes('C)')) ||
+                        (qId === 'q15' && btn.innerText.trim().includes('C)'))
+                    );
+                    if (isCorrectAnswer) {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border border-green-400 bg-green-50/50 text-slate-700 text-xs font-medium transition-all flex items-center justify-between";
+                        btn.querySelector('i').className = "fa-regular fa-circle-check text-green-500";
+                    }
+                }
+            });
+
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+            updateMetrics();
+        }
+
+        // Bloque de Verdadero o Falso
+        function checkTF(qId, chosen, actualCorrect) {
+            if (state.completed[qId]) return;
+
+            state.completed[qId] = true;
+            const isCorrect = (chosen === actualCorrect);
+            state.scores[qId] = isCorrect ? 1.0 : 0.0;
+
+            const tBtn = document.querySelector('.btn-t-' + qId);
+            const fBtn = document.querySelector('.btn-f-' + qId);
+
+            tBtn.disabled = true;
+            fBtn.disabled = true;
+
+            if (chosen === true) {
+                if (isCorrect) {
+                    tBtn.className = "px-5 py-2.5 rounded-xl border-2 border-green-500 bg-green-50 text-green-700 text-xs font-bold transition-all";
+                } else {
+                    tBtn.className = "px-5 py-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold transition-all";
+                }
+            } else {
+                if (isCorrect) {
+                    fBtn.className = "px-5 py-2.5 rounded-xl border-2 border-green-500 bg-green-50 text-green-700 text-xs font-bold transition-all";
+                } else {
+                    fBtn.className = "px-5 py-2.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold transition-all";
+                }
+            }
+
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+            updateMetrics();
+        }
+
+        // Recálculo Métrico en Vivo
+        function updateMetrics() {
+            let scoreBlock1 = 0, countBlock1 = 0;
+            for (let i = 1; i <= 10; i++) {
+                scoreBlock1 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock1++;
+            }
+
+            let scoreBlock2 = 0, countBlock2 = 0;
+            for (let i = 11; i <= 15; i++) {
+                scoreBlock2 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock2++;
+            }
+
+            let scoreBlock3 = 0, countBlock3 = 0;
+            for (let i = 16; i <= 20; i++) {
+                scoreBlock3 += state.scores['q' + i];
+                if (state.completed['q' + i]) countBlock3++;
+            }
+
+            const totalScore = scoreBlock1 + scoreBlock2 + scoreBlock3;
+            const completedCount = countBlock1 + countBlock2 + countBlock3;
+            const totalPercent = (completedCount / 20) * 100;
+
+            document.getElementById('score-display').innerText = totalScore.toFixed(1);
+            document.getElementById('score-block-1').innerText = scoreBlock1.toFixed(1) + " / 10";
+            document.getElementById('score-block-2').innerText = scoreBlock2 + " / 5";
+            document.getElementById('score-block-3').innerText = scoreBlock3 + " / 5";
+
+            document.getElementById('badge-d').innerText = countBlock1 + "/10";
+            document.getElementById('badge-o').innerText = countBlock2 + "/5";
+            document.getElementById('badge-vf').innerText = countBlock3 + "/5";
+
+            document.getElementById('global-progress').style.width = totalPercent + "%";
+            document.getElementById('progress-text').innerText = completedCount + " / 20 Resueltas";
+
+            // Modificación del Rango de Competencia Basado en Performance
+            const rankBadge = document.getElementById('rank-badge');
+            if (totalScore >= 18) {
+                rankBadge.innerText = "Médico Especialista";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300";
+            } else if (totalScore >= 14) {
+                rankBadge.innerText = "Médico Residente";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-clinical-100 text-clinical-800 border border-clinical-300";
+            } else if (totalScore >= 8) {
+                rankBadge.innerText = "Estudiante Avanzado";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300";
+            } else {
+                rankBadge.innerText = "Clínico Novicio";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200";
+            }
+
+            if (completedCount === 20) {
+                document.getElementById('badge-rep').innerHTML = '<i class="fa-solid fa-check-double text-green-500"></i>';
+            }
+        }
+
+        // Generación de Informe de Recomendaciones Médicas
+        function updateReport() {
+            let scoreB1 = 0, scoreB2 = 0, scoreB3 = 0;
+            for (let i = 1; i <= 10; i++) scoreB1 += state.scores['q' + i];
+            for (let i = 11; i <= 15; i++) scoreB2 += state.scores['q' + i];
+            for (let i = 16; i <= 20; i++) scoreB3 += state.scores['q' + i];
+
+            const finalScore = scoreB1 + scoreB2 + scoreB3;
+
+            document.getElementById('report-score').innerText = finalScore.toFixed(1) + " / 20.0";
+            document.getElementById('rep-b1').innerText = scoreB1.toFixed(1) + " / 10";
+            document.getElementById('rep-b2').innerText = scoreB2 + " / 5";
+            document.getElementById('rep-b3').innerText = scoreB3 + " / 5";
+
+            let evalText = "";
+            let recs = [];
+
+            if (finalScore >= 18) {
+                evalText = "Excelente dominio de soluciones, biofísica y farmacocinética aplicada. Tus capacidades para estimar e interpretar variables cuantitativas en el ámbito clínico son sumamente destacadas.";
+                recs = [
+                    "Continúa analizando casos metabólicos y de desequilibrio ácido-base complejos con brechas aniónicas corregidas (ej. albúmina).",
+                    "Profundiza en la diferencia entre osmolaridad teórica medida y la osmolaridad efectiva (tonicidad) en el contexto de solutos permeables como la urea.",
+                    "Repasa las velocidades críticas recomendadas de corrección del sodio en hiponatremias crónicas para evitar el síndrome de desmielinización osmótica."
+                ];
+            } else if (finalScore >= 14) {
+                evalText = "Buen desempeño cuantitativo. Comprendes de manera óptima las bases de la fluidoterapia y el cálculo estequiométrico, pero requieres pulir sutilezas teóricas y evitar descuidos menores en la nomenclatura.";
+                recs = [
+                    "Asegura la asimilación conceptual de la expresión de unidades físicas de concentración (como el m/V y g%).",
+                    "Repasa la conversión rápida de unidades metabolizables críticas como la urea y el lactato celular.",
+                    "Refuerza la fisiología celular referida a la dirección del agua libre al interactuar con sueros salinos hipotónicos en espacios celulares contraídos."
+                ];
+            } else {
+                evalText = "Se requiere una revisión prioritaria de los fundamentos cuantitativos de la fluidoterapia y la bioquímica física. Se sugiere repasar detalladamente el análisis paso a paso de cada caso.";
+                recs = [
+                    "Repasa la regla de tres simple y el cálculo estequiométrico elemental de concentraciones moleculares.",
+                    "Recuerda que los compuestos iónicos como el cloruro de sodio experimentan una disociación molecular electrolítica que altera los valores finales de osmolaridad (Factor i).",
+                    "Estudia con rigurosidad la diferencia fundamental entre el espacio extracelular y el volumen intracelular en términos de flujos osmóticos direccionales."
+                ];
+            }
+
+            document.getElementById('report-eval-text').innerText = evalText;
+
+            const recList = document.getElementById('recommendations-list');
+            recList.innerHTML = "";
+            recs.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerText = rec;
+                recList.appendChild(li);
+            });
+
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+        }
+    </script>
+</body>
+</html>
