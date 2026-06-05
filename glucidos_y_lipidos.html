@@ -1,428 +1,512 @@
-import React, { useState } from 'react';
-import { BookOpen, CheckCircle, HelpCircle, AlertCircle, RefreshCcw, PenTool, BrainCircuit, Activity, Zap } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioquímica Médica - Glúcidos y Lípidos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuración e Importación de MathJax para renderizar fórmulas químicas y griegas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-const studyQuestions = [
-  {
-    id: 1,
-    q: "Eres el médico de guardia recibiendo a Marcela, una paciente con Diabetes Tipo I que olvidó su insulina por 30 horas. Redacta el fundamento bioquímico de su crisis: explica cómo la falta de insulina desató la hiperglucemia y el aumento de cuerpos cetónicos. En tu explicación, detalla el papel del Acetil-CoA como 'semáforo' metabólico: ¿por qué su acumulación masiva inhibe a la Piruvato Deshidrogenasa (PDH) y fuerza la activación simultánea de la gluconeogénesis y la cetogénesis?",
-    a: "La falta absoluta de insulina dispara el glucagón, hiperactivando la lipólisis adiposa. El hígado se inunda de ácidos grasos, produciendo una β-oxidación masiva que genera enormes cantidades de ATP, NADH y Acetil-CoA.\nEl Acetil-CoA actúa como 'semáforo': su exceso inhibe a la Piruvato Deshidrogenasa (PDH), bloqueando la degradación de glucosa, y a la vez activa a la Piruvato Carboxilasa, obligando al piruvato a convertirse en oxalacetato para la gluconeogénesis (causando hiperglucemia).\nComo el oxalacetato se 'fuga' hacia la gluconeogénesis, el ciclo de Krebs se detiene. El Acetil-CoA acumulado no tiene por dónde entrar y se desvía obligatoriamente hacia la síntesis de Cuerpos Cetónicos, causando la cetoacidosis."
-  },
-  {
-    id: 2,
-    q: "Un recién nacido padece Enfermedad de Von Gierke. Imagina que el hígado es una fábrica donde la única 'puerta de salida' (la enzima Glucosa-6-Fosfatasa) ha sido clausurada con candado. Desarrolla: ¿Por qué este niño sufrirá hipoglucemia severa a las pocas horas de ayuno? Además, explica el 'efecto dominó': ¿cómo intenta compensar el cuerpo y por qué esta Glucosa-6-Fosfato atrapada termina generando inevitablemente Lactato (acidosis) y acumulación de TAG hepático?",
-    a: "Sufre hipoglucemia severa porque, durante el ayuno, ni la glucogenólisis ni la gluconeogénesis pueden liberar glucosa libre a la sangre (ambas vías terminan en G6P, la cual requiere la G6Pasa faltante para perder su fosfato y salir de la célula).\nEfecto dominó: La G6P atrapada se acumula masivamente e ingresa forzosamente a la glucólisis, generando un exceso de piruvato que, al no dar abasto el ciclo de Krebs, se reduce a Lactato (acidosis láctica). Además, parte de la G6P va a la vía de las pentosas (generando NADPH) y el exceso de piruvato forma Acetil-CoA; ambos estimulan la síntesis de ácidos grasos que, unidos al glicerol-3-P (producto también de la glucólisis estancada), forman Triacilglicéridos (TAG), causando hepatomegalia severa."
-  },
-  {
-    id: 3,
-    q: "Tu paciente lleva 36 horas sin ingerir alimentos. Escribe un reporte metabólico sobre la 'cooperación' entre sus órganos: describe el papel central del hígado en la producción de glucosa y cómo el músculo esquelético se sacrifica para ayudarlo. En tu desarrollo, detalla cómo funciona el Ciclo de la Alanina, explicando la función y el destino de los precursores que transporta.",
-    a: "En el ayuno de 36h, el glucógeno hepático está agotado y el hígado depende enteramente de la Gluconeogénesis para mantener vivo al cerebro. El músculo se sacrifica degradando sus propias proteínas (especialmente aminoácidos ramificados) para enviar precursores.\nCiclo de la Alanina: El músculo transfiere el grupo amino (tóxico) de sus aminoácidos degradados a una molécula de piruvato (proveniente de su glucólisis), formando Alanina. La Alanina viaja por sangre al hígado. Allí sufre transaminación: el grupo amino se destina al Ciclo de la Urea para ser excretado, y el esqueleto carbonado (piruvato) ingresa directo a la gluconeogénesis para formar glucosa nueva, que retorna por sangre al músculo o al cerebro."
-  },
-  {
-    id: 4,
-    q: "Tras un almuerzo abundante, la insulina toma el control. Explica de forma dinámica cómo esta hormona convence al Tejido Adiposo de almacenar energía. Debes detallar obligatoriamente su efecto activador sobre la enzima clave Lipoproteína Lipasa (LPL) del endotelio y cómo este estímulo específico barre (limpia) los Triacilglicéridos (TAG) del plasma sanguíneo.",
-    a: "En el estado posprandial, la insulina promueve el almacenamiento lipídico (anabolismo). En el tejido adiposo, no solo favorece el ingreso de glucosa (vía GLUT4), sino que estimula la síntesis y la translocación de la enzima Lipoproteína Lipasa (LPL) hacia el endotelio capilar.\nLa LPL actúa como una 'tijera' vascular: se une a las lipoproteínas circulantes ricas en TAG (Quilomicrones de la dieta y VLDL hepáticas) estimulada por la apoC-II, hidrolizando sus triglicéridos. Libera ácidos grasos libres que ingresan al adipocito, donde son re-esterificados junto al glicerol-3-fosfato (proveniente de la glucólisis activada por insulina) para almacenarse como gotas de grasa. Así, la LPL 'barre' o limpia los lípidos de la sangre."
-  },
-  {
-    id: 5,
-    q: "El corazón en reposo es un 'quemador de grasa' por excelencia. Sin embargo, durante un Infarto Agudo de Miocardio (IAM), el oxígeno desaparece (hipoxia). Describe este colapso: ¿qué ocurre exactamente con la beta-oxidación y el Ciclo de Krebs al faltar el oxígeno? Explica por qué el miocardio se ve forzado a sobrevivir retrocediendo hacia la Glucólisis Anaeróbica, y cómo esto explica la letal acumulación de Lactato.",
-    a: "El metabolismo miocárdico normal depende de la β-oxidación y Krebs, los cuales generan NADH y FADH2. Estas coenzimas NECESITAN transferir sus electrones al oxígeno en la Cadena Respiratoria (aceptor final). En un IAM (hipoxia), la cadena se detiene; el NADH y FADH2 no pueden reoxidarse, inhibiendo rápidamente y por completo a las enzimas de la β-oxidación y de Krebs.\nPara evitar la muerte inmediata por falta de ATP, el miocardio activa la Glucólisis Anaeróbica (única vía que genera ATP sin oxígeno). Para mantener esta vía, debe reoxidar el NADH producido a NAD+; lo logra reduciendo el piruvato a Lactato mediado por la LDH. Esta acumulación masiva de lactato y protones baja drásticamente el pH tisular, causando dolor intenso y daño celular letal."
-  },
-  {
-    id: 6,
-    q: "Durante el ayuno, el hígado oxida ácidos grasos produciendo montañas de Acetil-CoA. Justifica a nivel enzimático y termodinámico por qué este Acetil-CoA NO puede entrar al Ciclo de Krebs para generar ATP infinitamente, y tampoco puede ser convertido en Glucosa (Gluconeogénesis). ¿Por qué su destino exclusivo y obligatorio termina siendo la síntesis de Cuerpos Cetónicos?",
-    a: "1. No puede hacerse glucosa: La reacción de la Piruvato Deshidrogenasa (Piruvato -> Acetil-CoA) es irreversible. El mamífero carece de enzimas para convertir Acetil-CoA de vuelta a piruvato u oxalacetato.\n2. No puede entrar a Krebs: La alta β-oxidación produce altos niveles de ATP y NADH, los cuales son inhibidores alostéricos potentes de las enzimas clave de Krebs (Isocitrato DH y α-Cetoglutarato DH). Además, el oxalacetato está siendo derivado hacia la gluconeogénesis, vaciando el ciclo de intermediarios.\nDestino obligado: Al acumularse en la mitocondria sin poder ingresar a Krebs ni revertirse a glucosa, las moléculas de Acetil-CoA se condensan entre sí (Tiolasa, HMG-CoA Sintasa y Liasa) formando cuerpos cetónicos (acetoacetato y β-hidroxibutirato), la única forma soluble en agua de exportar energía lipídica a otros tejidos."
-  },
-  {
-    id: 7,
-    q: "Explica qué son las incretinas (como GLP-1 y GIP), en qué órgano se liberan y en respuesta a qué estímulo. En tu desarrollo: (1) detalla cómo estas hormonas ejercen su efecto hiperinsulinemiante sobre el páncreas y de qué manera el fármaco (al inhibir a la DPP-4) potencia este mecanismo para controlar la glucemia posprandial. Finalmente,  (2) fundamenta con lógica metabólica por qué este tratamiento es excelente para tu paciente (Tipo 2), pero sería absolutamente inútil si se lo dieras a un paciente con Diabetes Mellitus Tipo 1.",
-    a: "Las incretinas (GLP-1 y GIP) son hormonas gastrointestinales secretadas por el intestino (células L y K) en respuesta directa a la ingesta de nutrientes.\n1. Mecanismo: Viajan al páncreas y estimulan a las células beta para secretar insulina (de forma dependiente de la glucosa), a la vez que inhiben la secreción de glucagón. Normalmente, la enzima DPP-4 degrada estas incretinas en pocos minutos. Los fármacos inhibidores de DPP-4 (gliptinas) bloquean esta degradación, prolongando la vida media de las incretinas en sangre y potenciando drásticamente la secreción de insulina posprandial.\n2. Lógica Metabólica (Tipo 2 vs Tipo 1): En un paciente con Diabetes Tipo 2, las células beta del páncreas aún existen y pueden responder a este estímulo incretínico extra para liberar más insulina y superar la resistencia periférica. En la Diabetes Tipo 1, ocurre una destrucción autoinmune absoluta de las células beta; al no existir la 'fábrica' productora, por más que el fármaco potencie a las incretinas endógenas, no habrá quién reciba el mensaje ni quién produzca insulina. Por esto, es totalmente inútil en Tipo 1."
-  }
-];
-
-const tfQuestions = [
-  {
-    id: 8,
-    q: "\"En el estado de saciedad (luego de comer), la síntesis de colesterol endógeno hepático queda inmediatamente inhibida gracias al alto influjo de colesterol dietario que llega transportado por los quilomicrones.\"",
-    correct: false,
-    rationale: "Falso. En el estado de saciedad (dominado por la insulina), las vías de síntesis lipídica se ACTIVAN. La insulina estimula mediante desfosforilación a la HMG-CoA Reductasa (enzima clave formadora de colesterol). El colesterol dietético de los quilomicrones no inhibe inmediatamente esto ante la fuerte señal anabólica de la hormona del estado de abundancia."
-  },
-  {
-    id: 9,
-    q: "\"La principal función solidaria de la Glucogenólisis Hepática en ayunas es enviar su producto final, la Glucosa-6-Fosfato, directamente por la sangre hacia el músculo para su uso inmediato.\"",
-    correct: false,
-    rationale: "Falso. La Glucosa-6-Fosfato no puede cruzar la membrana plasmática por tener carga eléctrica (está 'atrapada'). La verdadera función solidaria hepática ocurre porque el hígado posee la enzima Glucosa-6-Fosfatasa, la cual remueve el fosfato y permite liberar GLUCOSA LIBRE a la sangre para los tejidos."
-  },
-  {
-    id: 10,
-    q: "\"La hormona Glucagón estimula vías catabólicas como la Glucogenólisis y la Gluconeogénesis provocando activamente la desfosforilación de todas las enzimas clave en el hígado.\"",
-    correct: false,
-    rationale: "Falso. El mecanismo de acción del Glucagón (y de la Adrenalina) está mediado por la vía del AMPc y la Proteína Quinasa A (PKA), cuya acción final es FOSFORILAR a las enzimas clave. Esta fosforilación es lo que activa vías catabólicas (ej. Glucógeno Fosforilasa) e inhibe vías anabólicas."
-  },
-  {
-    id: 11,
-    q: "\"Si un individuo cursa un ayuno de 24 horas, la enzima Carnitina Acil Transferasa I (CAT-1) se encontrará altamente activa, funcionando como una puerta giratoria para movilizar ácidos grasos hacia el interior mitocondrial.\"",
-    correct: true,
-    rationale: "Verdadero. En ayunas, el Glucagón inhibe a la Acetil-CoA Carboxilasa (ACC), haciendo que caigan drásticamente los niveles de Malonil-CoA. El Malonil-CoA es el inhibidor fisiológico de la CAT-1; al desaparecer, la CAT-1 queda libre y altamente activa para ingresar grasas a la mitocondria y sostener la β-oxidación."
-  },
-  {
-    id: 12,
-    q: "\"Los fármacos inhibidores de la enzima DPP-4 (basados en potenciar a las incretinas) tienen muchísimo sentido para ser administrados de urgencia a un paciente con Diabetes Tipo I descompensada, con el fin de reducir sus cuerpos cetónicos.\"",
-    correct: false,
-    rationale: "Falso. Los inhibidores de la DPP-4 (gliptinas) actúan prolongando la vida de las incretinas para estimular la secreción de insulina endógena por las células beta del páncreas. Un paciente con Diabetes Tipo I tiene destrucción autoinmune absoluta de dichas células; potenciar incretinas no le sirve de nada (necesita insulina exógena)."
-  }
-];
-
-const mcqQuestions = [
-  {
-    id: 13,
-    q: "Tras ser rescatado luego de estar perdido en un bosque sin alimento durante 35 horas, el principal proceso que está manteniendo viva la corteza cerebral del paciente al sostener su glucemia es de forma casi exclusiva:",
-    options: [
-      "a) La Glucólisis.",
-      "b) La Glucogenólisis.",
-      "c) La Gluconeogénesis.",
-      "d) La Vía de las Pentosas Fosfato."
-    ],
-    correct: 2,
-    rationale: "A las 35 horas de inanición, las reservas de glucógeno hepático (Glucogenólisis) ya se han agotado por completo (duran aprox. 12-18hs). El mantenimiento de la glucemia recae exclusivamente sobre la Gluconeogénesis hepática a expensas de precursores musculares y adiposos."
-  },
-  {
-    id: 14,
-    q: "Realizas un análisis de sangre a un paciente solo un par de horas después de que comiera una enorme porción de comida chatarra. Su plasma es turbio debido a una hipertrigliceridemia fisiológica postprandial. La lipoproteína que encontrarás elevada rebozando de grasas de la dieta es:",
-    options: [
-      "a) VLDL.",
-      "b) LDL.",
-      "c) HDL.",
-      "d) Quilomicrón."
-    ],
-    correct: 3,
-    rationale: "El Quilomicrón es la lipoproteína encargada específicamente de empaquetar y transportar los triglicéridos exógenos (provenientes directo de la dieta desde el intestino) hacia los tejidos periféricos. Su gran tamaño genera la turbidez en el plasma (suero quiloso postprandial)."
-  },
-  {
-    id: 15,
-    q: "El famoso 'Ciclo de Cori' es una maravilla de la integración metabólica que permite a tus músculos esqueléticos trabajar en condiciones de baja oxigenación, utilizando al hígado como un centro de reciclaje. ¿Qué transporta exactamente este ciclo a través de la sangre?",
-    options: [
-      "a) Alanina del músculo hacia la Glucosa del hígado.",
-      "b) Ácidos Grasos del músculo hacia la Glucosa del hígado.",
-      "c) Lactato del músculo hacia la Glucosa del hígado.",
-      "d) Cuerpos Cetónicos del músculo hacia la Glucosa del hígado."
-    ],
-    correct: 2,
-    rationale: "El Ciclo de Cori interconecta el Lactato generado por la glucólisis anaeróbica muscular (por la contracción intensa) transportándolo por sangre hacia el hígado. Allí, el hígado lo recicla usando gluconeogénesis para formar nueva Glucosa, la cual devuelve por sangre al músculo."
-  }
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('study');
-  
-  // MCQ State
-  const [mcqAnswers, setMcqAnswers] = useState({});
-  const [mcqSubmitted, setMcqSubmitted] = useState(false);
-  const [mcqScore, setMcqScore] = useState(0);
-
-  // TF State
-  const [tfAnswers, setTfAnswers] = useState({});
-  const [tfSubmitted, setTfSubmitted] = useState(false);
-  const [tfScore, setTfScore] = useState(0);
-
-  // Study State
-  const [revealedQuestions, setRevealedQuestions] = useState({});
-
-  // Handlers
-  const toggleReveal = (id) => {
-    setRevealedQuestions(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleMcqSelect = (qId, optionIndex) => {
-    if (!mcqSubmitted) {
-      setMcqAnswers(prev => ({ ...prev, [qId]: optionIndex }));
-    }
-  };
-
-  const submitMcq = () => {
-    let score = 0;
-    mcqQuestions.forEach(q => {
-      if (mcqAnswers[q.id] === q.correct) score++;
-    });
-    setMcqScore(score);
-    setMcqSubmitted(true);
-  };
-
-  const handleTfSelect = (qId, value) => {
-    if (!tfSubmitted) {
-      setTfAnswers(prev => ({ ...prev, [qId]: value }));
-    }
-  };
-
-  const submitTf = () => {
-    let score = 0;
-    tfQuestions.forEach(q => {
-      if (tfAnswers[q.id] === q.correct) score++;
-    });
-    setTfScore(score);
-    setTfSubmitted(true);
-  };
-
-  const resetQuizzes = () => {
-    setMcqAnswers({});
-    setMcqSubmitted(false);
-    setTfAnswers({});
-    setTfSubmitted(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
-      
-      {/* Header */}
-      <header className="bg-emerald-800 text-white p-6 shadow-md relative z-40">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3 mb-2">
-            <Zap className="w-8 h-8 pointer-events-none text-emerald-300" />
-            Metabolismo de Glúcidos y Lípidos
-          </h1>
-          <p className="text-emerald-100 mb-6">Módulo Fisiopatológico y Bioquímica Clínica</p>
-          
-          {/* Navigation Tabs - Fixes implemented */}
-          <div className="flex bg-emerald-900 rounded-lg p-1 space-x-1 overflow-x-auto relative z-50">
-            <button 
-              type="button"
-              onClick={() => setActiveTab('study')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
-                ${activeTab === 'study' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
-            >
-              <PenTool className="w-5 h-5 pointer-events-none" />
-              Desarrollo Analítico (7)
-            </button>
-            <button 
-              type="button"
-              onClick={() => setActiveTab('tf')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
-                ${activeTab === 'tf' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
-            >
-              <BrainCircuit className="w-5 h-5 pointer-events-none" />
-              Verdadero/Falso (5)
-            </button>
-            <button 
-              type="button"
-              onClick={() => setActiveTab('mcq')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
-                ${activeTab === 'mcq' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
-            >
-              <HelpCircle className="w-5 h-5 pointer-events-none" />
-              Opción Múltiple (3)
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="max-w-4xl mx-auto p-4 mt-4 relative z-10">
-        
-        {/* TAB 1: STUDY (DESARROLLO) */}
-        {activeTab === 'study' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
-              <h2 className="text-xl font-bold text-slate-800 mb-2">Preguntas de Desarrollo Analítico (50%)</h2>
-              <p className="text-slate-600 text-sm">
-                Estas preguntas exigen conectar vías metabólicas y justificar la fisiopatología. Utiliza el espacio de borrador para esbozar la respuesta.
-              </p>
-            </div>
-
-            {studyQuestions.map((q) => (
-              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-5 bg-slate-50 border-b border-slate-100">
-                  <div className="flex items-start gap-3">
-                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">Q{q.id}</span>
-                    <h3 className="font-semibold text-slate-800 leading-relaxed">{q.q}</h3>
-                  </div>
-                </div>
-                
-                <div className="p-5">
-                  <textarea 
-                    className="w-full h-28 p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm mb-4 resize-none"
-                    placeholder="Conecta las enzimas, hormonas y vías aquí antes de revisar la respuesta..."
-                  ></textarea>
-                  
-                  <button
-                    type="button"
-                    onClick={() => toggleReveal(q.id)}
-                    className="flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer select-none"
-                  >
-                    {revealedQuestions[q.id] ? <BookOpen className="w-4 h-4 pointer-events-none" /> : <HelpCircle className="w-4 h-4 pointer-events-none" />}
-                    {revealedQuestions[q.id] ? "Ocultar Respuesta" : "Revelar Respuesta Fisiopatológica"}
-                  </button>
-
-                  {revealedQuestions[q.id] && (
-                    <div className="mt-4 p-5 bg-amber-50 border border-amber-200 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
-                      <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-wrap">{q.a}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* TAB 2: T/F (VERDADERO O FALSO) */}
-        {activeTab === 'tf' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">Verdadero o Falso (25%)</h2>
-                <p className="text-slate-600 text-sm">Indica (V) o (F). Al finalizar, lee atentamente la justificación obligatoria.</p>
-              </div>
-              {tfSubmitted && (
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-emerald-600">{tfScore} / {tfQuestions.length}</div>
-                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Puntuación</div>
-                </div>
-              )}
-            </div>
-
-            {tfQuestions.map((q) => (
-              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-5 border-b border-slate-100 flex gap-3">
-                  <span className="text-slate-400 font-bold">{q.id}.</span>
-                  <p className="font-semibold text-slate-800">{q.q}</p>
-                </div>
-                
-                <div className="p-4 grid grid-cols-2 gap-4">
-                   {[true, false].map(val => {
-                     const isSelected = tfAnswers[q.id] === val;
-                     const isCorrect = q.correct === val;
-                     let btnClass = "py-3 rounded-lg border font-bold text-sm transition-all duration-200 cursor-pointer select-none ";
-                     
-                     if (tfSubmitted) {
-                       if (isCorrect) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-700";
-                       else if (isSelected) btnClass += "bg-rose-50 border-rose-500 text-rose-700";
-                       else btnClass += "border-slate-200 text-slate-400 opacity-50";
-                     } else {
-                       if (isSelected) btnClass += "bg-emerald-600 border-emerald-600 text-white shadow-md";
-                       else btnClass += "border-slate-300 hover:border-emerald-400 hover:bg-emerald-50 text-slate-600";
-                     }
-
-                     return (
-                       <button
-                         key={val.toString()}
-                         type="button"
-                         disabled={tfSubmitted}
-                         onClick={() => handleTfSelect(q.id, val)}
-                         className={btnClass}
-                       >
-                         {val ? "Verdadero" : "Falso"}
-                       </button>
-                     )
-                   })}
-                </div>
-
-                {tfSubmitted && (
-                  <div className="bg-slate-50 p-4 border-t border-slate-200 flex gap-3">
-                    <div className="mt-1 shrink-0">
-                      {tfAnswers[q.id] === q.correct ? 
-                        <CheckCircle className="w-5 h-5 text-emerald-500 pointer-events-none" /> : 
-                        <AlertCircle className="w-5 h-5 text-rose-500 pointer-events-none" />
-                      }
-                    </div>
-                    <p className="text-sm text-slate-700"><strong>Justificación de Corrección:</strong> {q.rationale}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <div className="flex justify-end gap-4 mt-6">
-              {tfSubmitted && (
-                <button type="button" onClick={resetQuizzes} className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer select-none">
-                  <RefreshCcw className="w-5 h-5 pointer-events-none" /> Reiniciar
-                </button>
-              )}
-              {!tfSubmitted && Object.keys(tfAnswers).length > 0 && (
-                <button type="button" onClick={submitTf} className="px-8 py-3 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors cursor-pointer select-none">
-                  Corregir Examen
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: MCQ (OPCIÓN MÚLTIPLE) */}
-        {activeTab === 'mcq' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">Múltiple Choice Alto Rendimiento (25%)</h2>
-                <p className="text-slate-600 text-sm">Selecciona la única opción correcta. Evalúa vías complejas y farmacología.</p>
-              </div>
-              {mcqSubmitted && (
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-emerald-600">{mcqScore} / {mcqQuestions.length}</div>
-                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Puntuación</div>
-                </div>
-              )}
-            </div>
-
-            {mcqQuestions.map((q) => (
-              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-5 border-b border-slate-100">
-                  <div className="flex gap-3">
-                    <span className="text-slate-400 font-bold">{q.id}.</span>
-                    <h3 className="font-semibold text-slate-800">{q.q}</h3>
-                  </div>
-                </div>
-                
-                <div className="p-4 space-y-2">
-                  {q.options.map((opt, optIndex) => {
-                    const isSelected = mcqAnswers[q.id] === optIndex;
-                    const isCorrect = q.correct === optIndex;
-                    let btnClass = "w-full text-left p-3 rounded-lg border transition-all duration-200 flex items-center justify-between cursor-pointer select-none ";
-                    
-                    if (mcqSubmitted) {
-                      if (isCorrect) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-900";
-                      else if (isSelected) btnClass += "bg-rose-50 border-rose-500 text-rose-900";
-                      else btnClass += "border-slate-200 text-slate-500 opacity-50";
-                    } else {
-                      if (isSelected) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-900 ring-1 ring-emerald-500";
-                      else btnClass += "border-slate-200 hover:border-emerald-300 hover:bg-slate-50 text-slate-700";
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clinical: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        neutralSlate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
                     }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col custom-scrollbar">
 
-                    return (
-                      <button 
-                        key={optIndex} 
-                        type="button"
-                        onClick={() => handleMcqSelect(q.id, optIndex)}
-                        disabled={mcqSubmitted}
-                        className={btnClass}
-                      >
-                        <span className="text-sm pointer-events-none">{opt}</span>
-                        {mcqSubmitted && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-500 pointer-events-none shrink-0" />}
-                        {mcqSubmitted && isSelected && !isCorrect && <AlertCircle className="w-5 h-5 text-rose-500 pointer-events-none shrink-0" />}
-                      </button>
-                    );
-                  })}
+    <!-- Header Principal -->
+    <header class="bg-gradient-to-r from-clinical-900 to-clinical-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm shadow-inner">
+                    <i class="fa-solid fa-flask-vial text-emerald-300 text-2xl"></i>
                 </div>
-                
-                {mcqSubmitted && (
-                  <div className="bg-emerald-50 p-4 border-t border-emerald-100">
-                    <p className="text-sm text-emerald-900"><strong>Razonamiento Bioquímico:</strong> {q.rationale}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            <div className="flex justify-end gap-4 mt-6">
-              {mcqSubmitted && (
-                <button type="button" onClick={resetQuizzes} className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer select-none">
-                  <RefreshCcw className="w-5 h-5 pointer-events-none" /> Reiniciar
-                </button>
-              )}
-              {!mcqSubmitted && Object.keys(mcqAnswers).length > 0 && (
-                <button type="button" onClick={submitMcq} className="px-8 py-3 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors cursor-pointer select-none">
-                  Corregir Examen
-                </button>
-              )}
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Metabolismo de Glúcidos y Lípidos</h1>
+                    <p class="text-xs text-emerald-100/80">Plataforma de Simulación e Integración Fisiopatológica</p>
+                </div>
             </div>
-          </div>
-        )}
+            <!-- Progress Tracker -->
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <div class="w-full sm:w-48 bg-slate-850 h-2.5 rounded-full overflow-hidden border border-white/5">
+                    <div id="global-progress" class="bg-emerald-450 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span class="text-sm font-semibold whitespace-nowrap text-emerald-50" id="progress-text">0 / 7 Casos Resueltos</span>
+            </div>
+        </div>
+    </header>
 
-      </main>
+    <!-- Contenedor Principal en Grid -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Barra Lateral Izquierda -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <!-- Panel de Competencia -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Panel de Competencia</h2>
+                <div class="flex items-baseline gap-2 mb-1.5">
+                    <span class="text-4xl font-black text-clinical-800 tracking-tight" id="score-display">0.0</span>
+                    <span class="text-slate-400 text-sm">/ 7.0 Puntos</span>
+                </div>
+                <div class="mb-4">
+                    <div class="text-[11px] font-bold text-slate-500 uppercase mb-1">Rango Académico:</div>
+                    <span id="rank-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Iniciado Clínico
+                    </span>
+                </div>
+            </div>
+
+            <!-- Ficha Referencial de Pacientes -->
+            <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5 shadow-sm text-xs text-slate-700 leading-relaxed">
+                <h3 class="font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-hospital-user mr-1.5"></i> Casos en Discusión</h3>
+                <ul class="space-y-2">
+                    <li><strong class="text-clinical-700">Marcela:</strong> Diabética Tipo I, descompensada por omisión de insulina de 30 horas.</li>
+                    <li><strong class="text-clinical-700">Von Gierke:</strong> Neonato con deficiencia de Glucosa-6-Fosfatasa, acidosis láctica y hepatomegalia.</li>
+                    <li><strong class="text-clinical-700">Ayuno prolongado (36h):</strong> Cooperación interorgánica y ciclo glucosa-alanina.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Workspace Central -->
+        <div class="lg:col-span-3 space-y-6">
+            
+            <!-- Pregunta 1 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q1">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 1 &bull; DIABETES TIPO I</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-001</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">1. Fundamento de la Crisis de Marcela:</span> Eres el médico de guardia recibiendo a Marcela, una paciente con Diabetes Tipo I que olvidó su insulina por 30 horas. Redacta el fundamento bioquímico de su crisis: explica cómo la falta de insulina desató la hiperglucemia y el aumento de cuerpos cetónicos. En tu explicación, detalla el papel del Acetil-CoA como 'semáforo' metabólico: ¿por qué su acumulación masiva inhibe a la Piruvato Deshidrogenasa (PDH) y fuerza la activación simultánea de la gluconeogénesis y la cetogénesis?
+                </h3>
+                <textarea id="ans-q1" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Escribe tu análisis bioquímico y justificación de la cetoacidosis..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q1')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q1" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q1', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q1', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q1" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        La falta absoluta de insulina dispara el glucagón, hiperactivando la lipólisis adiposa. El hígado se inunda de ácidos grasos, produciendo una $\beta$-oxidación masiva que genera enormes cantidades de ATP, NADH y Acetil-CoA. 
+                        <br><br>
+                        <strong>El Acetil-CoA actúa como 'semáforo':</strong> su exceso inhibe a la Piruvato Deshidrogenasa (PDH), bloqueando la degradación de glucosa, y a la vez activa a la Piruvato Carboxilasa, obligando al piruvato a convertirse en oxalacetato para la gluconeogénesis (causando hiperglucemia). Como el oxalacetato se 'fuga' hacia la gluconeogénesis, el ciclo de Krebs se detiene. El Acetil-CoA acumulado no tiene por dónde entrar y se desvía obligatoriamente hacia la síntesis de Cuerpos Cetónicos, causando la cetoacidosis.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 2 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q2">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 2 &bull; GLUCOGENOSIS</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-002</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">2. Enfermedad de Von Gierke:</span> Un recién nacido padece Enfermedad de Von Gierke. Imagina que el hígado es una fábrica donde la única 'puerta de salida' (la enzima Glucosa-6-Fosfatasa) ha sido clausurada con candado. Desarrolla: ¿Por qué este niño sufrirá hipoglucemia severa a las pocas horas de ayuno? Además, explica el 'efecto dominó': ¿cómo intenta compensar el cuerpo y por qué esta Glucosa-6-Fosfato atrapada termina generando inevitablemente Lactato (acidosis) y acumulación de TAG hepático?
+                </h3>
+                <textarea id="ans-q2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Explica las vías de la G6P acumulada..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q2')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q2" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q2', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q2', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q2" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        Sufre hipoglucemia severa porque, durante el ayuno, ni la glucogenólisis ni la gluconeogénesis pueden liberar glucosa libre a la sangre (ambas vías terminan obligatoriamente en G6P, la cual requiere de la G6Pasa faltante para perder su fosfato y salir de la célula).
+                        <br><br>
+                        <strong>Efecto dominó:</strong> La G6P atrapada se acumula masivamente e ingresa forzosamente a la glucólisis citosólica, generando un exceso de piruvato que, al no dar abasto el ciclo de Krebs, se reduce a Lactato (provocando acidosis láctica). Además, parte de la G6P se desvía a la vía de las pentosas fosfato (generando abundante NADPH) y el exceso de piruvato mitocondrial forma Acetil-CoA; ambos metabolitos estimulan la síntesis de novo de ácidos grasos que, unidos al glicerol-3-fosfato (producto del estancamiento glucolítico), forman triacilglicéridos (TAG), acumulándose en el hígado y causando hepatomegalia severa.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 3 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q3">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 3 &bull; AYUNO PROLONGADO</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-003</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">3. Reporte de Cooperación Interorgánica (36 horas):</span> Tu paciente lleva 36 horas sin ingerir alimentos. Escribe un reporte metabólico sobre la 'cooperación' entre sus órganos: describe el papel central del hígado en la producción de glucosa y cómo el músculo esquelético se sacrifica para ayudarlo. En tu desarrollo, detalla cómo funciona el Ciclo de la Alanina, explicando la función y el destino de los precursores que transporta.
+                </h3>
+                <textarea id="ans-q3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Detalla el ciclo de la Alanina y el catabolismo de proteínas musculares..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q3')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q3" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q3', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q3', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q3" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        En el ayuno de 36 horas, el glucógeno hepático está completamente agotado, y el hígado depende enteramente de la Gluconeogénesis para mantener vivo al cerebro. El músculo esquelético se sacrifica degradando sus propias proteínas (especialmente aminoácidos ramificados) para enviar precursores carbonados.
+                        <br><br>
+                        <strong>Ciclo de la Alanina:</strong> El músculo transfiere el grupo amino (tóxico) de sus aminoácidos degradados a una molécula de piruvato (proveniente de su glucólisis), formando Alanina. La Alanina viaja por el torrente sanguíneo hacia el hígado. Allí sufre transaminación: el grupo amino se destina al Ciclo de la Urea para ser excretado de forma segura, y el esqueleto carbonado resultante (piruvato) ingresa directo a la gluconeogénesis para formar glucosa nueva, que retorna por sangre al músculo o al cerebro.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 4 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q4">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 4 &bull; FISIOLOGÍA DE LA INSULINA</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-004</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">4. Almacenamiento Lipídico y Lipoproteína Lipasa (LPL):</span> Tras un almuerzo abundante, la insulina toma el control. Explica de forma dinámica cómo esta hormona convence al Tejido Adiposo de almacenar energía. Debes detallar obligatoriamente su efecto activador sobre la enzima clave Lipoproteína Lipasa (LPL) del endotelio y cómo este estímulo específico barre (limpia) los Triacilglicéridos (TAG) del plasma sanguíneo.
+                </h3>
+                <textarea id="ans-q4" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Explica la activación de la LPL por la insulina posprandial..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q4')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q4" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q4', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q4', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q4" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        En el estado posprandial, la insulina promueve el almacenamiento lipídico (anabolismo). En el tejido adiposo, no solo favorece el ingreso de glucosa (vía transportadores GLUT4), sino que estimula la síntesis y la translocación de la enzima <strong>Lipoproteína Lipasa (LPL)</strong> hacia el endotelio capilar de los vasos del tejido.
+                        <br><br>
+                        La LPL actúa como una 'tijera' vascular: se une a las lipoproteínas circulantes ricas en TAG (Quilomicrones de la dieta y VLDL de síntesis hepática) estimulada por la apoproteína apoC-II, hidrolizando sus triglicéridos. Libera ácidos grasos libres que ingresan al adipocito, donde son re-esterificados junto al glicerol-3-fosfato (proveniente de la glucólisis activada por insulina) para almacenarse como gotas de grasa anhidra. Así, la LPL 'barre' o limpia activamente los lípidos de la sangre.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 5 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q5">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 5 &bull; CARDIOLOGÍA Y METABOLISMO</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-005</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">5. Miocardio en Isquemia (Infarto Agudo de Miocardio):</span> El corazón en reposo es un 'quemador de grasa' por excelencia. Sin embargo, durante un Infarto Agudo de Miocardio (IAM), el oxígeno desaparece (hipoxia). Describe este colapso: ¿qué ocurre exactamente con la beta-oxidación y el Ciclo de Krebs al faltar el oxígeno? Explica por qué el miocardio se ve forzado a sobrevivir retrocediendo hacia la Glucólisis Anaeróbica, y cómo esto explica la letal acumulación de Lactato.
+                </h3>
+                <textarea id="ans-q5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Explica la detención de la Cadena Respiratoria y la activación de la glucólisis anaeróbica..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q5')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q5" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q5', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q5', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q5" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        El metabolismo miocárdico normal depende de la $\beta$-oxidación y el Ciclo de Krebs, los cuales generan NADH y $\text{FADH}_2$. Estas coenzimas reducidas NECESITAN transferir sus electrones al oxígeno en la Cadena Respiratoria mitocondrial (su aceptor final). En un IAM (hipoxia), al faltar el oxígeno la cadena se detiene; las coenzimas NADH y $\text{FADH}_2$ no pueden reoxidarse, lo que inhibe por completo por retroalimentación a las enzimas clave de la $\beta$-oxidación y de Krebs.
+                        <br><br>
+                        Para evitar la muerte inmediata por falta absoluta de ATP, el miocardio activa la <strong>Glucólisis Anaeróbica</strong> (única vía citosólica que genera ATP sin requerir oxígeno). Para mantener esta vía activa, se debe reoxidar el NADH producido a $\text{NAD}^+$; esto se logra reduciendo el piruvato a Lactato mediado por la enzima Lactato Deshidrogenasa (LDH). Esta acumulación masiva de lactato y protones baja drásticamente el pH tisular, causando el característico dolor de pecho intenso (angina) y daño celular letal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 6 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q6">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 6 &bull; BIOENERGÉTICA MITOCONDRIAL</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-006</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">6. Destino Obligado del Acetil-CoA en Ayuno:</span> Durante el ayuno, el hígado oxida ácidos grasos produciendo montañas de Acetil-CoA. Justifica a nivel enzimático y termodinámico por qué este Acetil-CoA NO puede entrar al Ciclo de Krebs para generar ATP infinitamente, y tampoco puede ser convertido en Glucosa (Gluconeogénesis). ¿Por qué su destino exclusivo y obligatorio termina siendo la síntesis de Cuerpos Cetónicos?
+                </h3>
+                <textarea id="ans-q6" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Explica la irreversibilidad de la PDH y los inhibidores de Krebs..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q6')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q6" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q6', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q6', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q6" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        <strong>No puede hacerse glucosa:</strong> La reacción de la Piruvato Deshidrogenasa (Piruvato $\rightarrow$ Acetil-CoA) es irreversible termodinámicamente. El ser humano y los mamíferos carecen de la maquinaria enzimática para convertir el Acetil-CoA de vuelta a piruvato o a oxalacetato de forma directa (no existe el ciclo del glioxilato).
+                        <br><br>
+                        <strong>No puede entrar a Krebs infinitamente:</strong> La altísima tasa de $\beta$-oxidación hepática genera grandes niveles de ATP y NADH mitocondrial, los cuales actúan como potentes inhibidores alostéricos directos de las enzimas limitantes del Ciclo de Krebs (principalmente Isocitrato Deshidrogenasa y $\alpha$-Cetoglutarato Deshidrogenasa). Adicionalmente, el oxalacetato de la mitocondria está siendo activamente derivado hacia el citosol para la gluconeogénesis.
+                        <br><br>
+                        <strong>Destino obligado:</strong> Al acumularse en la matriz mitocondrial sin poder entrar a Krebs ni revertirse a glucosa, las moléculas de Acetil-CoA se condensan entre sí mediadas por la Tiolasa, la HMG-CoA Sintasa y la Liasa, formando <strong>Cuerpos Cetónicos</strong> (acetoacetato y $\beta$-hidroxibutirato), única forma soluble de exportar energía lipídica a tejidos extrahepáticos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pregunta 7 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200" id="card-q7">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <span class="bg-clinical-50 text-clinical-800 text-xs font-bold px-3 py-1 rounded-full">CASO 7 &bull; FARMACOLOGÍA ENDÓCRINA</span>
+                    <span class="text-xs text-slate-400 font-mono">ID: MET-007</span>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 mb-3 leading-relaxed">
+                    <span class="text-clinical-700 font-bold">7. Incretinas y Fisiopatología de las Diabetes:</span> Explica qué son las incretinas (como GLP-1 y GIP), en qué órgano se liberan y en respuesta a qué estímulo. En tu desarrollo: (1) detalla cómo estas hormonas ejercen su efecto hiperinsulinemiante sobre el páncreas y de qué manera el fármaco (al inhibir a la DPP-4) potencia este mecanismo para controlar la glucemia posprandial. Finalmente, (2) fundamenta con lógica metabólica por qué este tratamiento es excelente para tu paciente (Tipo 2), pero sería absolutamente inútil si se lo dieras a un paciente con Diabetes Mellitus Tipo 1.
+                </h3>
+                <textarea id="ans-q7" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-clinical-600 focus:outline-none transition-all placeholder:text-slate-400" rows="4" placeholder="Explica el eje entero-insular, la DPP-4 y la diferencia funcional celular entre DM1 y DM2..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-between items-center">
+                    <button onclick="revealFeedback('q7')" class="bg-clinical-600 hover:bg-clinical-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">
+                        <i class="fa-solid fa-stethoscope mr-1.5"></i> Revelar Análisis Médico
+                    </button>
+                    <div id="eval-q7" class="hidden flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-semibold">Autoevaluación:</span>
+                        <button onclick="setScore('q7', 1.0)" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg border border-green-200 font-medium transition-all">Excelente (1.0 pt)</button>
+                        <button onclick="setScore('q7', 0.5)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs px-3 py-1.5 rounded-lg border border-amber-200 font-medium transition-all">Parcial (0.5 pt)</button>
+                    </div>
+                </div>
+
+                <div id="fb-q7" class="hidden mt-5 p-4 bg-emerald-50/50 border-l-4 border-clinical-600 rounded-r-xl">
+                    <h4 class="text-xs font-bold text-clinical-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-clipboard-check mr-1.5"></i> Análisis Médico Experto</h4>
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        Las <strong>incretinas (GLP-1 y GIP)</strong> son hormonas peptídicas gastrointestinales secretadas por las células L y K del intestino en respuesta directa a la llegada de nutrientes (ingesta).
+                        <br><br>
+                        <strong>Mecanismo y fármaco:</strong> Viajan al páncreas donde potencian la secreción de insulina dependiente de glucosa por las células beta e inhiben el glucagón. Fisiológicamente son degradadas en minutos por la enzima DPP-4. Los fármacos inhibidores de la DPP-4 (gliptinas) bloquean esta enzima, prolongando la vida media de las incretinas endógenas y potenciando notablemente la secreción de insulina postprandial para barrer la glucemia de forma controlada.
+                        <br><br>
+                        <strong>Diferencia fisiopatológica crucial:</strong> Este tratamiento requiere obligatoriamente de la existencia de células beta funcionales en el páncreas. En un paciente con <strong>Diabetes Tipo 2</strong>, las células beta aún existen y son estimuladas con éxito por el fármaco. Por el contrario, en un paciente con <strong>Diabetes Tipo 1</strong>, ha ocurrido una destrucción autoinmune absoluta y selectiva de las células beta; por ende, aunque aumentemos las incretinas al infinito con medicamentos, no habrá células que puedan responder secretando insulina, haciendo al tratamiento completamente inútil.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botón para ir al Reporte Final -->
+            <div class="flex justify-end pt-4">
+                <button onclick="switchTab('block-report')" class="bg-clinical-700 hover:bg-clinical-800 text-white font-bold px-6 py-3.5 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                    Generar Diagnóstico Académico <i class="fa-solid fa-graduation-cap"></i>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- TAB 4: CLINICAL REPORT -->
+    <div id="block-report" class="tab-content hidden max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full space-y-6">
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold mb-1.5"><i class="fa-solid fa-chart-pie mr-2.5"></i>Informe de Desempeño Clínico e Integración Metabólica</h2>
+            <p class="text-sm text-slate-300">Análisis detallado de tus competencias en la interrelación del metabolismo de carbohidratos y lípidos.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="text-center py-6">
+                <div class="inline-flex items-center justify-center p-4 bg-clinical-50 text-clinical-600 rounded-full mb-4">
+                    <i class="fa-solid fa-stethoscope text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-1">Tu Puntuación Acumulada</h3>
+                <div class="text-5xl font-black text-clinical-700 mb-2" id="report-score">0.0 / 7.0</div>
+                <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed" id="report-eval-text">
+                    Completa todos los casos para ver tu diagnóstico de competencias y el veredicto del tribunal.
+                </p>
+            </div>
+
+            <!-- Clinical Recommendations -->
+            <div class="mt-6 border-t border-slate-100 pt-6">
+                <h4 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-file-waveform mr-2 text-clinical-600"></i>Recomendaciones del Tribunal</h4>
+                <ul class="text-xs text-slate-600 space-y-2.5 list-disc pl-5 leading-relaxed" id="recommendations-list">
+                    <li>Resuelve el simulador clínico completo para generar un plan de refuerzo personalizado.</li>
+                </ul>
+            </div>
+        </div>
     </div>
-  );
-}
+
+    <!-- Footer de la cátedra -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-4.5 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Cátedra de Bioquímica y Biología Molecular Aplicada. Diseñado con rigor médico para el entrenamiento de estudiantes de medicina.</p>
+    </footer>
+
+    <!-- Lógica de Estado y Cálculo en JS -->
+    <script>
+        const state = {
+            scores: { q1: 0.0, q2: 0.0, q3: 0.0, q4: 0.0, q5: 0.0, q6: 0.0, q7: 0.0 },
+            completed: { q1: false, q2: false, q3: false, q4: false, q5: false, q6: false, q7: false }
+        };
+
+        function switchTab(tabId) {
+            if (tabId === 'block-report') {
+                document.getElementById('block-report').classList.remove('hidden');
+                document.getElementById('block-desarrollo').classList.add('hidden');
+                updateReport();
+            } else {
+                document.getElementById('block-report').classList.add('hidden');
+                document.getElementById('block-desarrollo').classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function revealFeedback(qId) {
+            document.getElementById('fb-' + qId).classList.remove('hidden');
+            document.getElementById('eval-' + qId).classList.remove('hidden');
+            if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function setScore(qId, score) {
+            state.scores[qId] = score;
+            state.completed[qId] = true;
+            
+            const card = document.getElementById('card-' + qId);
+            card.classList.remove('border-slate-200');
+            card.classList.add('border-clinical-600', 'bg-clinical-50/10');
+            
+            updateMetrics();
+        }
+
+        function updateMetrics() {
+            let totalScore = 0;
+            let completedCount = 0;
+            for (let i = 1; i <= 7; i++) {
+                totalScore += state.scores['q' + i];
+                if (state.completed['q' + i]) completedCount++;
+            }
+
+            const totalPercent = (completedCount / 7) * 100;
+
+            document.getElementById('score-display').innerText = totalScore.toFixed(1);
+            document.getElementById('global-progress').style.width = totalPercent + "%";
+            document.getElementById('progress-text').innerText = completedCount + " / 7 Casos Resueltos";
+
+            // Modificación del Rango de Competencia
+            const rankBadge = document.getElementById('rank-badge');
+            if (totalScore >= 6) {
+                rankBadge.innerText = "Médico Internista";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300";
+            } else if (totalScore >= 4) {
+                rankBadge.innerText = "Médico Residente";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-clinical-800 border border-emerald-300";
+            } else if (totalScore >= 2) {
+                rankBadge.innerText = "Estudiante Clínico";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300";
+            } else {
+                rankBadge.innerText = "Iniciado Clínico";
+                rankBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200";
+            }
+
+            if (completedCount === 7) {
+                document.getElementById('badge-rep').innerHTML = '<i class="fa-solid fa-check-double text-green-500"></i>';
+            }
+        }
+
+        function updateReport() {
+            let total = 0;
+            for (let i = 1; i <= 7; i++) total += state.scores['q' + i];
+
+            document.getElementById('report-score').innerText = total.toFixed(1) + " / 7.0";
+
+            let evalText = "";
+            let recs = [];
+
+            if (total >= 6.0) {
+                evalText = "Excelente dominio de la bioenergética y la bioquímica aplicada. Tu análisis sobre la irreversibilidad de la PDH y el comportamiento de la G6P es digno de un posgrado médico.";
+                recs = [
+                    "Continúa analizando casos críticos de cetoacidosis y acidosis láctica para tu práctica hospitalaria.",
+                    "Repasa el comportamiento metabólico de la LPL en patologías genéticas raras de quilomicronemia familiar.",
+                    "Domina la farmacodinámica de los inhibidores de SGLT-2 en relación con la diuresis osmótica."
+                ];
+            } else if (total >= 4.0) {
+                evalText = "Buen desempeño en la correlación clínica. Tienes claros los conceptos, pero requieres afinar las explicaciones metabólicas finas sobre Krebs y la degradación mitocondrial.";
+                recs = [
+                    "Refuerza por qué el Acetil-CoA no puede revertirse a glucosa en los mamíferos (reacción irreversible de la PDH).",
+                    "Repasa las vías de desvío de la G6P acumulada (pentosas fosfato, síntesis de novo de lípidos y triglicéridos).",
+                    "Asegura la asimilación conceptual del ciclo de la Alanina y sus transportes de nitrógeno."
+                ];
+            } else {
+                evalText = "Se requiere una revisión detallada de las vías metabólicas integradas. Te aconsejamos estudiar de forma pormenorizada cada una de las retroalimentaciones provistas por la cátedra.";
+                recs = [
+                    "Estudia la diferencia fundamental entre el mecanismo fisiopatológico de la Diabetes Tipo I y la Tipo II.",
+                    "Comprende por qué el corazón colapsa metabólicamente en hipoxia al no poder reoxidar el NADH en la cadena respiratoria.",
+                    "Recuerda que la G6Pasa es la única enzima capaz de liberar glucosa libre desde el hepatocito hacia la sangre."
+                ];
+            }
+
+            document.getElementById('report-eval-text').innerText = evalText;
+
+            const recList = document.getElementById('recommendations-list');
+            recList.innerHTML = "";
+            recs.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerText = rec;
+                recList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
+`
