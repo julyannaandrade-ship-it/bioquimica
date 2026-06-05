@@ -1,0 +1,428 @@
+import React, { useState } from 'react';
+import { BookOpen, CheckCircle, HelpCircle, AlertCircle, RefreshCcw, PenTool, BrainCircuit, Activity, Zap } from 'lucide-react';
+
+const studyQuestions = [
+  {
+    id: 1,
+    q: "Eres el médico de guardia recibiendo a Marcela, una paciente con Diabetes Tipo I que olvidó su insulina por 30 horas. Redacta el fundamento bioquímico de su crisis: explica cómo la falta de insulina desató la hiperglucemia y el aumento de cuerpos cetónicos. En tu explicación, detalla el papel del Acetil-CoA como 'semáforo' metabólico: ¿por qué su acumulación masiva inhibe a la Piruvato Deshidrogenasa (PDH) y fuerza la activación simultánea de la gluconeogénesis y la cetogénesis?",
+    a: "La falta absoluta de insulina dispara el glucagón, hiperactivando la lipólisis adiposa. El hígado se inunda de ácidos grasos, produciendo una β-oxidación masiva que genera enormes cantidades de ATP, NADH y Acetil-CoA.\nEl Acetil-CoA actúa como 'semáforo': su exceso inhibe a la Piruvato Deshidrogenasa (PDH), bloqueando la degradación de glucosa, y a la vez activa a la Piruvato Carboxilasa, obligando al piruvato a convertirse en oxalacetato para la gluconeogénesis (causando hiperglucemia).\nComo el oxalacetato se 'fuga' hacia la gluconeogénesis, el ciclo de Krebs se detiene. El Acetil-CoA acumulado no tiene por dónde entrar y se desvía obligatoriamente hacia la síntesis de Cuerpos Cetónicos, causando la cetoacidosis."
+  },
+  {
+    id: 2,
+    q: "Un recién nacido padece Enfermedad de Von Gierke. Imagina que el hígado es una fábrica donde la única 'puerta de salida' (la enzima Glucosa-6-Fosfatasa) ha sido clausurada con candado. Desarrolla: ¿Por qué este niño sufrirá hipoglucemia severa a las pocas horas de ayuno? Además, explica el 'efecto dominó': ¿cómo intenta compensar el cuerpo y por qué esta Glucosa-6-Fosfato atrapada termina generando inevitablemente Lactato (acidosis) y acumulación de TAG hepático?",
+    a: "Sufre hipoglucemia severa porque, durante el ayuno, ni la glucogenólisis ni la gluconeogénesis pueden liberar glucosa libre a la sangre (ambas vías terminan en G6P, la cual requiere la G6Pasa faltante para perder su fosfato y salir de la célula).\nEfecto dominó: La G6P atrapada se acumula masivamente e ingresa forzosamente a la glucólisis, generando un exceso de piruvato que, al no dar abasto el ciclo de Krebs, se reduce a Lactato (acidosis láctica). Además, parte de la G6P va a la vía de las pentosas (generando NADPH) y el exceso de piruvato forma Acetil-CoA; ambos estimulan la síntesis de ácidos grasos que, unidos al glicerol-3-P (producto también de la glucólisis estancada), forman Triacilglicéridos (TAG), causando hepatomegalia severa."
+  },
+  {
+    id: 3,
+    q: "Tu paciente lleva 36 horas sin ingerir alimentos. Escribe un reporte metabólico sobre la 'cooperación' entre sus órganos: describe el papel central del hígado en la producción de glucosa y cómo el músculo esquelético se sacrifica para ayudarlo. En tu desarrollo, detalla cómo funciona el Ciclo de la Alanina, explicando la función y el destino de los precursores que transporta.",
+    a: "En el ayuno de 36h, el glucógeno hepático está agotado y el hígado depende enteramente de la Gluconeogénesis para mantener vivo al cerebro. El músculo se sacrifica degradando sus propias proteínas (especialmente aminoácidos ramificados) para enviar precursores.\nCiclo de la Alanina: El músculo transfiere el grupo amino (tóxico) de sus aminoácidos degradados a una molécula de piruvato (proveniente de su glucólisis), formando Alanina. La Alanina viaja por sangre al hígado. Allí sufre transaminación: el grupo amino se destina al Ciclo de la Urea para ser excretado, y el esqueleto carbonado (piruvato) ingresa directo a la gluconeogénesis para formar glucosa nueva, que retorna por sangre al músculo o al cerebro."
+  },
+  {
+    id: 4,
+    q: "Tras un almuerzo abundante, la insulina toma el control. Explica de forma dinámica cómo esta hormona convence al Tejido Adiposo de almacenar energía. Debes detallar obligatoriamente su efecto activador sobre la enzima clave Lipoproteína Lipasa (LPL) del endotelio y cómo este estímulo específico barre (limpia) los Triacilglicéridos (TAG) del plasma sanguíneo.",
+    a: "En el estado posprandial, la insulina promueve el almacenamiento lipídico (anabolismo). En el tejido adiposo, no solo favorece el ingreso de glucosa (vía GLUT4), sino que estimula la síntesis y la translocación de la enzima Lipoproteína Lipasa (LPL) hacia el endotelio capilar.\nLa LPL actúa como una 'tijera' vascular: se une a las lipoproteínas circulantes ricas en TAG (Quilomicrones de la dieta y VLDL hepáticas) estimulada por la apoC-II, hidrolizando sus triglicéridos. Libera ácidos grasos libres que ingresan al adipocito, donde son re-esterificados junto al glicerol-3-fosfato (proveniente de la glucólisis activada por insulina) para almacenarse como gotas de grasa. Así, la LPL 'barre' o limpia los lípidos de la sangre."
+  },
+  {
+    id: 5,
+    q: "El corazón en reposo es un 'quemador de grasa' por excelencia. Sin embargo, durante un Infarto Agudo de Miocardio (IAM), el oxígeno desaparece (hipoxia). Describe este colapso: ¿qué ocurre exactamente con la beta-oxidación y el Ciclo de Krebs al faltar el oxígeno? Explica por qué el miocardio se ve forzado a sobrevivir retrocediendo hacia la Glucólisis Anaeróbica, y cómo esto explica la letal acumulación de Lactato.",
+    a: "El metabolismo miocárdico normal depende de la β-oxidación y Krebs, los cuales generan NADH y FADH2. Estas coenzimas NECESITAN transferir sus electrones al oxígeno en la Cadena Respiratoria (aceptor final). En un IAM (hipoxia), la cadena se detiene; el NADH y FADH2 no pueden reoxidarse, inhibiendo rápidamente y por completo a las enzimas de la β-oxidación y de Krebs.\nPara evitar la muerte inmediata por falta de ATP, el miocardio activa la Glucólisis Anaeróbica (única vía que genera ATP sin oxígeno). Para mantener esta vía, debe reoxidar el NADH producido a NAD+; lo logra reduciendo el piruvato a Lactato mediado por la LDH. Esta acumulación masiva de lactato y protones baja drásticamente el pH tisular, causando dolor intenso y daño celular letal."
+  },
+  {
+    id: 6,
+    q: "Durante el ayuno, el hígado oxida ácidos grasos produciendo montañas de Acetil-CoA. Justifica a nivel enzimático y termodinámico por qué este Acetil-CoA NO puede entrar al Ciclo de Krebs para generar ATP infinitamente, y tampoco puede ser convertido en Glucosa (Gluconeogénesis). ¿Por qué su destino exclusivo y obligatorio termina siendo la síntesis de Cuerpos Cetónicos?",
+    a: "1. No puede hacerse glucosa: La reacción de la Piruvato Deshidrogenasa (Piruvato -> Acetil-CoA) es irreversible. El mamífero carece de enzimas para convertir Acetil-CoA de vuelta a piruvato u oxalacetato.\n2. No puede entrar a Krebs: La alta β-oxidación produce altos niveles de ATP y NADH, los cuales son inhibidores alostéricos potentes de las enzimas clave de Krebs (Isocitrato DH y α-Cetoglutarato DH). Además, el oxalacetato está siendo derivado hacia la gluconeogénesis, vaciando el ciclo de intermediarios.\nDestino obligado: Al acumularse en la mitocondria sin poder ingresar a Krebs ni revertirse a glucosa, las moléculas de Acetil-CoA se condensan entre sí (Tiolasa, HMG-CoA Sintasa y Liasa) formando cuerpos cetónicos (acetoacetato y β-hidroxibutirato), la única forma soluble en agua de exportar energía lipídica a otros tejidos."
+  },
+  {
+    id: 7,
+    q: "Explica qué son las incretinas (como GLP-1 y GIP), en qué órgano se liberan y en respuesta a qué estímulo. En tu desarrollo: (1) detalla cómo estas hormonas ejercen su efecto hiperinsulinemiante sobre el páncreas y de qué manera el fármaco (al inhibir a la DPP-4) potencia este mecanismo para controlar la glucemia posprandial. Finalmente,  (2) fundamenta con lógica metabólica por qué este tratamiento es excelente para tu paciente (Tipo 2), pero sería absolutamente inútil si se lo dieras a un paciente con Diabetes Mellitus Tipo 1.",
+    a: "Las incretinas (GLP-1 y GIP) son hormonas gastrointestinales secretadas por el intestino (células L y K) en respuesta directa a la ingesta de nutrientes.\n1. Mecanismo: Viajan al páncreas y estimulan a las células beta para secretar insulina (de forma dependiente de la glucosa), a la vez que inhiben la secreción de glucagón. Normalmente, la enzima DPP-4 degrada estas incretinas en pocos minutos. Los fármacos inhibidores de DPP-4 (gliptinas) bloquean esta degradación, prolongando la vida media de las incretinas en sangre y potenciando drásticamente la secreción de insulina posprandial.\n2. Lógica Metabólica (Tipo 2 vs Tipo 1): En un paciente con Diabetes Tipo 2, las células beta del páncreas aún existen y pueden responder a este estímulo incretínico extra para liberar más insulina y superar la resistencia periférica. En la Diabetes Tipo 1, ocurre una destrucción autoinmune absoluta de las células beta; al no existir la 'fábrica' productora, por más que el fármaco potencie a las incretinas endógenas, no habrá quién reciba el mensaje ni quién produzca insulina. Por esto, es totalmente inútil en Tipo 1."
+  }
+];
+
+const tfQuestions = [
+  {
+    id: 8,
+    q: "\"En el estado de saciedad (luego de comer), la síntesis de colesterol endógeno hepático queda inmediatamente inhibida gracias al alto influjo de colesterol dietario que llega transportado por los quilomicrones.\"",
+    correct: false,
+    rationale: "Falso. En el estado de saciedad (dominado por la insulina), las vías de síntesis lipídica se ACTIVAN. La insulina estimula mediante desfosforilación a la HMG-CoA Reductasa (enzima clave formadora de colesterol). El colesterol dietético de los quilomicrones no inhibe inmediatamente esto ante la fuerte señal anabólica de la hormona del estado de abundancia."
+  },
+  {
+    id: 9,
+    q: "\"La principal función solidaria de la Glucogenólisis Hepática en ayunas es enviar su producto final, la Glucosa-6-Fosfato, directamente por la sangre hacia el músculo para su uso inmediato.\"",
+    correct: false,
+    rationale: "Falso. La Glucosa-6-Fosfato no puede cruzar la membrana plasmática por tener carga eléctrica (está 'atrapada'). La verdadera función solidaria hepática ocurre porque el hígado posee la enzima Glucosa-6-Fosfatasa, la cual remueve el fosfato y permite liberar GLUCOSA LIBRE a la sangre para los tejidos."
+  },
+  {
+    id: 10,
+    q: "\"La hormona Glucagón estimula vías catabólicas como la Glucogenólisis y la Gluconeogénesis provocando activamente la desfosforilación de todas las enzimas clave en el hígado.\"",
+    correct: false,
+    rationale: "Falso. El mecanismo de acción del Glucagón (y de la Adrenalina) está mediado por la vía del AMPc y la Proteína Quinasa A (PKA), cuya acción final es FOSFORILAR a las enzimas clave. Esta fosforilación es lo que activa vías catabólicas (ej. Glucógeno Fosforilasa) e inhibe vías anabólicas."
+  },
+  {
+    id: 11,
+    q: "\"Si un individuo cursa un ayuno de 24 horas, la enzima Carnitina Acil Transferasa I (CAT-1) se encontrará altamente activa, funcionando como una puerta giratoria para movilizar ácidos grasos hacia el interior mitocondrial.\"",
+    correct: true,
+    rationale: "Verdadero. En ayunas, el Glucagón inhibe a la Acetil-CoA Carboxilasa (ACC), haciendo que caigan drásticamente los niveles de Malonil-CoA. El Malonil-CoA es el inhibidor fisiológico de la CAT-1; al desaparecer, la CAT-1 queda libre y altamente activa para ingresar grasas a la mitocondria y sostener la β-oxidación."
+  },
+  {
+    id: 12,
+    q: "\"Los fármacos inhibidores de la enzima DPP-4 (basados en potenciar a las incretinas) tienen muchísimo sentido para ser administrados de urgencia a un paciente con Diabetes Tipo I descompensada, con el fin de reducir sus cuerpos cetónicos.\"",
+    correct: false,
+    rationale: "Falso. Los inhibidores de la DPP-4 (gliptinas) actúan prolongando la vida de las incretinas para estimular la secreción de insulina endógena por las células beta del páncreas. Un paciente con Diabetes Tipo I tiene destrucción autoinmune absoluta de dichas células; potenciar incretinas no le sirve de nada (necesita insulina exógena)."
+  }
+];
+
+const mcqQuestions = [
+  {
+    id: 13,
+    q: "Tras ser rescatado luego de estar perdido en un bosque sin alimento durante 35 horas, el principal proceso que está manteniendo viva la corteza cerebral del paciente al sostener su glucemia es de forma casi exclusiva:",
+    options: [
+      "a) La Glucólisis.",
+      "b) La Glucogenólisis.",
+      "c) La Gluconeogénesis.",
+      "d) La Vía de las Pentosas Fosfato."
+    ],
+    correct: 2,
+    rationale: "A las 35 horas de inanición, las reservas de glucógeno hepático (Glucogenólisis) ya se han agotado por completo (duran aprox. 12-18hs). El mantenimiento de la glucemia recae exclusivamente sobre la Gluconeogénesis hepática a expensas de precursores musculares y adiposos."
+  },
+  {
+    id: 14,
+    q: "Realizas un análisis de sangre a un paciente solo un par de horas después de que comiera una enorme porción de comida chatarra. Su plasma es turbio debido a una hipertrigliceridemia fisiológica postprandial. La lipoproteína que encontrarás elevada rebozando de grasas de la dieta es:",
+    options: [
+      "a) VLDL.",
+      "b) LDL.",
+      "c) HDL.",
+      "d) Quilomicrón."
+    ],
+    correct: 3,
+    rationale: "El Quilomicrón es la lipoproteína encargada específicamente de empaquetar y transportar los triglicéridos exógenos (provenientes directo de la dieta desde el intestino) hacia los tejidos periféricos. Su gran tamaño genera la turbidez en el plasma (suero quiloso postprandial)."
+  },
+  {
+    id: 15,
+    q: "El famoso 'Ciclo de Cori' es una maravilla de la integración metabólica que permite a tus músculos esqueléticos trabajar en condiciones de baja oxigenación, utilizando al hígado como un centro de reciclaje. ¿Qué transporta exactamente este ciclo a través de la sangre?",
+    options: [
+      "a) Alanina del músculo hacia la Glucosa del hígado.",
+      "b) Ácidos Grasos del músculo hacia la Glucosa del hígado.",
+      "c) Lactato del músculo hacia la Glucosa del hígado.",
+      "d) Cuerpos Cetónicos del músculo hacia la Glucosa del hígado."
+    ],
+    correct: 2,
+    rationale: "El Ciclo de Cori interconecta el Lactato generado por la glucólisis anaeróbica muscular (por la contracción intensa) transportándolo por sangre hacia el hígado. Allí, el hígado lo recicla usando gluconeogénesis para formar nueva Glucosa, la cual devuelve por sangre al músculo."
+  }
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('study');
+  
+  // MCQ State
+  const [mcqAnswers, setMcqAnswers] = useState({});
+  const [mcqSubmitted, setMcqSubmitted] = useState(false);
+  const [mcqScore, setMcqScore] = useState(0);
+
+  // TF State
+  const [tfAnswers, setTfAnswers] = useState({});
+  const [tfSubmitted, setTfSubmitted] = useState(false);
+  const [tfScore, setTfScore] = useState(0);
+
+  // Study State
+  const [revealedQuestions, setRevealedQuestions] = useState({});
+
+  // Handlers
+  const toggleReveal = (id) => {
+    setRevealedQuestions(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleMcqSelect = (qId, optionIndex) => {
+    if (!mcqSubmitted) {
+      setMcqAnswers(prev => ({ ...prev, [qId]: optionIndex }));
+    }
+  };
+
+  const submitMcq = () => {
+    let score = 0;
+    mcqQuestions.forEach(q => {
+      if (mcqAnswers[q.id] === q.correct) score++;
+    });
+    setMcqScore(score);
+    setMcqSubmitted(true);
+  };
+
+  const handleTfSelect = (qId, value) => {
+    if (!tfSubmitted) {
+      setTfAnswers(prev => ({ ...prev, [qId]: value }));
+    }
+  };
+
+  const submitTf = () => {
+    let score = 0;
+    tfQuestions.forEach(q => {
+      if (tfAnswers[q.id] === q.correct) score++;
+    });
+    setTfScore(score);
+    setTfSubmitted(true);
+  };
+
+  const resetQuizzes = () => {
+    setMcqAnswers({});
+    setMcqSubmitted(false);
+    setTfAnswers({});
+    setTfSubmitted(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+      
+      {/* Header */}
+      <header className="bg-emerald-800 text-white p-6 shadow-md relative z-40">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3 mb-2">
+            <Zap className="w-8 h-8 pointer-events-none text-emerald-300" />
+            Metabolismo de Glúcidos y Lípidos
+          </h1>
+          <p className="text-emerald-100 mb-6">Módulo Fisiopatológico y Bioquímica Clínica</p>
+          
+          {/* Navigation Tabs - Fixes implemented */}
+          <div className="flex bg-emerald-900 rounded-lg p-1 space-x-1 overflow-x-auto relative z-50">
+            <button 
+              type="button"
+              onClick={() => setActiveTab('study')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
+                ${activeTab === 'study' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
+            >
+              <PenTool className="w-5 h-5 pointer-events-none" />
+              Desarrollo Analítico (7)
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('tf')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
+                ${activeTab === 'tf' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
+            >
+              <BrainCircuit className="w-5 h-5 pointer-events-none" />
+              Verdadero/Falso (5)
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('mcq')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer select-none whitespace-nowrap
+                ${activeTab === 'mcq' ? 'bg-white text-emerald-900 shadow-sm' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
+            >
+              <HelpCircle className="w-5 h-5 pointer-events-none" />
+              Opción Múltiple (3)
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-4xl mx-auto p-4 mt-4 relative z-10">
+        
+        {/* TAB 1: STUDY (DESARROLLO) */}
+        {activeTab === 'study' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+              <h2 className="text-xl font-bold text-slate-800 mb-2">Preguntas de Desarrollo Analítico (50%)</h2>
+              <p className="text-slate-600 text-sm">
+                Estas preguntas exigen conectar vías metabólicas y justificar la fisiopatología. Utiliza el espacio de borrador para esbozar la respuesta.
+              </p>
+            </div>
+
+            {studyQuestions.map((q) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-5 bg-slate-50 border-b border-slate-100">
+                  <div className="flex items-start gap-3">
+                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">Q{q.id}</span>
+                    <h3 className="font-semibold text-slate-800 leading-relaxed">{q.q}</h3>
+                  </div>
+                </div>
+                
+                <div className="p-5">
+                  <textarea 
+                    className="w-full h-28 p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm mb-4 resize-none"
+                    placeholder="Conecta las enzimas, hormonas y vías aquí antes de revisar la respuesta..."
+                  ></textarea>
+                  
+                  <button
+                    type="button"
+                    onClick={() => toggleReveal(q.id)}
+                    className="flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer select-none"
+                  >
+                    {revealedQuestions[q.id] ? <BookOpen className="w-4 h-4 pointer-events-none" /> : <HelpCircle className="w-4 h-4 pointer-events-none" />}
+                    {revealedQuestions[q.id] ? "Ocultar Respuesta" : "Revelar Respuesta Fisiopatológica"}
+                  </button>
+
+                  {revealedQuestions[q.id] && (
+                    <div className="mt-4 p-5 bg-amber-50 border border-amber-200 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                      <p className="text-amber-900 text-sm leading-relaxed whitespace-pre-wrap">{q.a}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* TAB 2: T/F (VERDADERO O FALSO) */}
+        {activeTab === 'tf' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Verdadero o Falso (25%)</h2>
+                <p className="text-slate-600 text-sm">Indica (V) o (F). Al finalizar, lee atentamente la justificación obligatoria.</p>
+              </div>
+              {tfSubmitted && (
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-emerald-600">{tfScore} / {tfQuestions.length}</div>
+                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Puntuación</div>
+                </div>
+              )}
+            </div>
+
+            {tfQuestions.map((q) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex gap-3">
+                  <span className="text-slate-400 font-bold">{q.id}.</span>
+                  <p className="font-semibold text-slate-800">{q.q}</p>
+                </div>
+                
+                <div className="p-4 grid grid-cols-2 gap-4">
+                   {[true, false].map(val => {
+                     const isSelected = tfAnswers[q.id] === val;
+                     const isCorrect = q.correct === val;
+                     let btnClass = "py-3 rounded-lg border font-bold text-sm transition-all duration-200 cursor-pointer select-none ";
+                     
+                     if (tfSubmitted) {
+                       if (isCorrect) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-700";
+                       else if (isSelected) btnClass += "bg-rose-50 border-rose-500 text-rose-700";
+                       else btnClass += "border-slate-200 text-slate-400 opacity-50";
+                     } else {
+                       if (isSelected) btnClass += "bg-emerald-600 border-emerald-600 text-white shadow-md";
+                       else btnClass += "border-slate-300 hover:border-emerald-400 hover:bg-emerald-50 text-slate-600";
+                     }
+
+                     return (
+                       <button
+                         key={val.toString()}
+                         type="button"
+                         disabled={tfSubmitted}
+                         onClick={() => handleTfSelect(q.id, val)}
+                         className={btnClass}
+                       >
+                         {val ? "Verdadero" : "Falso"}
+                       </button>
+                     )
+                   })}
+                </div>
+
+                {tfSubmitted && (
+                  <div className="bg-slate-50 p-4 border-t border-slate-200 flex gap-3">
+                    <div className="mt-1 shrink-0">
+                      {tfAnswers[q.id] === q.correct ? 
+                        <CheckCircle className="w-5 h-5 text-emerald-500 pointer-events-none" /> : 
+                        <AlertCircle className="w-5 h-5 text-rose-500 pointer-events-none" />
+                      }
+                    </div>
+                    <p className="text-sm text-slate-700"><strong>Justificación de Corrección:</strong> {q.rationale}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="flex justify-end gap-4 mt-6">
+              {tfSubmitted && (
+                <button type="button" onClick={resetQuizzes} className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer select-none">
+                  <RefreshCcw className="w-5 h-5 pointer-events-none" /> Reiniciar
+                </button>
+              )}
+              {!tfSubmitted && Object.keys(tfAnswers).length > 0 && (
+                <button type="button" onClick={submitTf} className="px-8 py-3 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors cursor-pointer select-none">
+                  Corregir Examen
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: MCQ (OPCIÓN MÚLTIPLE) */}
+        {activeTab === 'mcq' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Múltiple Choice Alto Rendimiento (25%)</h2>
+                <p className="text-slate-600 text-sm">Selecciona la única opción correcta. Evalúa vías complejas y farmacología.</p>
+              </div>
+              {mcqSubmitted && (
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-emerald-600">{mcqScore} / {mcqQuestions.length}</div>
+                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Puntuación</div>
+                </div>
+              )}
+            </div>
+
+            {mcqQuestions.map((q) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-5 border-b border-slate-100">
+                  <div className="flex gap-3">
+                    <span className="text-slate-400 font-bold">{q.id}.</span>
+                    <h3 className="font-semibold text-slate-800">{q.q}</h3>
+                  </div>
+                </div>
+                
+                <div className="p-4 space-y-2">
+                  {q.options.map((opt, optIndex) => {
+                    const isSelected = mcqAnswers[q.id] === optIndex;
+                    const isCorrect = q.correct === optIndex;
+                    let btnClass = "w-full text-left p-3 rounded-lg border transition-all duration-200 flex items-center justify-between cursor-pointer select-none ";
+                    
+                    if (mcqSubmitted) {
+                      if (isCorrect) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-900";
+                      else if (isSelected) btnClass += "bg-rose-50 border-rose-500 text-rose-900";
+                      else btnClass += "border-slate-200 text-slate-500 opacity-50";
+                    } else {
+                      if (isSelected) btnClass += "bg-emerald-50 border-emerald-500 text-emerald-900 ring-1 ring-emerald-500";
+                      else btnClass += "border-slate-200 hover:border-emerald-300 hover:bg-slate-50 text-slate-700";
+                    }
+
+                    return (
+                      <button 
+                        key={optIndex} 
+                        type="button"
+                        onClick={() => handleMcqSelect(q.id, optIndex)}
+                        disabled={mcqSubmitted}
+                        className={btnClass}
+                      >
+                        <span className="text-sm pointer-events-none">{opt}</span>
+                        {mcqSubmitted && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-500 pointer-events-none shrink-0" />}
+                        {mcqSubmitted && isSelected && !isCorrect && <AlertCircle className="w-5 h-5 text-rose-500 pointer-events-none shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {mcqSubmitted && (
+                  <div className="bg-emerald-50 p-4 border-t border-emerald-100">
+                    <p className="text-sm text-emerald-900"><strong>Razonamiento Bioquímico:</strong> {q.rationale}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div className="flex justify-end gap-4 mt-6">
+              {mcqSubmitted && (
+                <button type="button" onClick={resetQuizzes} className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer select-none">
+                  <RefreshCcw className="w-5 h-5 pointer-events-none" /> Reiniciar
+                </button>
+              )}
+              {!mcqSubmitted && Object.keys(mcqAnswers).length > 0 && (
+                <button type="button" onClick={submitMcq} className="px-8 py-3 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors cursor-pointer select-none">
+                  Corregir Examen
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+}
