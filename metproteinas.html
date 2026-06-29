@@ -1,0 +1,1097 @@
+import React, { useState } from 'react';
+import { 
+  BookOpen, 
+  CheckCircle2, 
+  XCircle, 
+  Info, 
+  Activity, 
+  Brain, 
+  ArrowRight, 
+  TrendingUp, 
+  AlertTriangle, 
+  FileText, 
+  ChevronRight, 
+  HelpCircle 
+} from 'lucide-react';
+
+// --- RIGOROUS BIOCHEMICAL DATA STRUCTURES ---
+
+const LEVELS = [
+  {
+    id: 1,
+    title: "1. Digestión Gástrica y Autocatálisis",
+    organ: "Lumen Estomacal",
+    subtitle: "HCl, Zimógenos y Endopeptidasas",
+    concept: "La digestión gástrica de proteínas requiere la secreción coordinada de las células parietales (HCl) y principales (Pepsinógeno), resultando en la desnaturalización ácida y la activación autocatalítica irreversible.",
+    simulation: {
+      instructions: "Para iniciar la digestión, debes configurar la secreción gástrica y la activación de la proteasa principal en la matriz celular.",
+      template: "Sustrato: [ Zimógeno ] + Estimulador: [ Medio Ácido (HCl) ] ➔ Enzima Activa: [ Pepsina ] + Subproducto: [ Péptido Inhibidor ]",
+      dropdowns: [
+        {
+          id: "eq1_1",
+          label: "Zimógeno de partida secretado por células principales:",
+          options: ["Tripsinógeno", "Pepsinógeno", "Pepsina activa", "Amilasa"],
+          correct: "Pepsinógeno",
+          errorFeedback: "El tripsinógeno es un zimógeno pancreático (duodeno). La pepsina activa no se secreta como tal para evitar la autolisis de las glándulas gástricas. Se secreta Pepsinógeno."
+        },
+        {
+          id: "eq1_2",
+          label: "Estimulador fisiológico secretado por células parietales:",
+          options: ["Ácido Clorhídrico (HCl)", "Bicarbonato de Sodio (HCO3-)", "Enteropeptidasa"],
+          correct: "Ácido Clorhídrico (HCl)",
+          errorFeedback: "El bicarbonato neutraliza la acidez y es de origen pancreático. La enteropeptidasa actúa en el duodeno. Para cambiar la conformación del pepsinógeno necesitas el medio ácido del HCl."
+        },
+        {
+          id: "eq1_3",
+          label: "Enzima activa generada por corte proteolítico:",
+          options: ["Quimotripsina", "Pepsina", "Tripsina"],
+          correct: "Pepsina",
+          errorFeedback: "La quimotripsina y la tripsina son proteasas del intestino delgado. La enzima activa estomacal resultante del autocorte es la Pepsina."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q1_1",
+        text: "¿Cuál es el rol específico del Ácido Clorhídrico (HCl) gástrico en la digestión proteica de la dieta?",
+        options: [
+          { text: "Hidrolizar de forma directa los enlaces peptídicos de las proteínas nativas.", correct: false },
+          { text: "Desnaturalizar las proteínas (desplegando su estructura globular) facilitando el acceso a proteasas, y proveer el pH óptimo para el autocorte del pepsinógeno.", correct: true },
+          { text: "Actuar como cofactor alostérico reversible de la tripsina.", correct: false }
+        ],
+        explanation: "El HCl no rompe enlaces peptídicos por sí mismo (no tiene poder hidrolítico enzimático). Su función es desnaturalizar las proteínas (estirar las cadenas polipeptídicas para exponer los enlaces peptídicos) y bajar el pH a 1.5-2 para gatillar la activación autocatalítica del pepsinógeno."
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "2. Cascada de Zimógenos Duodenales",
+    organ: "Lumen Intestinal (Duodeno)",
+    subtitle: "El Interruptor Maestro de la Digestión Pancreática",
+    concept: "La enteropeptidasa intestinal inicia la cascada proteolítica activando al tripsinógeno, el cual a su vez actúa como activador autocatalítico de todos los demás zimógenos pancreáticos.",
+    simulation: {
+      instructions: "Completa secuencialmente la cascada de activación del quimo proteico en el duodeno.",
+      template: "Zimógeno: [ Tripsinógeno ] --Enzima Iniciadora: [ Enteropeptidasa ]--> Enzima Activa: [ Tripsina ] ➔ Activa a: [ Quimotripsina, Elastasa, Carboxipeptidasas ]",
+      dropdowns: [
+        {
+          id: "eq2_1",
+          label: "Enzima iniciadora anclada en el borde en cepillo duodenal:",
+          options: ["Tripsina pancreática", "Enteropeptidasa (Enterocinasa)", "Pepsina gástrica"],
+          correct: "Enteropeptidasa (Enterocinasa)",
+          errorFeedback: "La tripsina es el producto, no el iniciador primario. La pepsina queda inactiva a pH duodenal neutro. El interruptor maestro de membrana es la Enteropeptidasa."
+        },
+        {
+          id: "eq2_2",
+          label: "Zimógeno diana de la enteropeptidasa:",
+          options: ["Quimotrisinógeno", "Proelastasa", "Tripsinógeno"],
+          correct: "Tripsinógeno",
+          errorFeedback: "La enteropeptidasa reconoce de manera exclusiva y corta específicamente al Tripsinógeno para liberar la Tripsina activa."
+        },
+        {
+          id: "eq2_3",
+          label: "Zimógenos dependientes del corte por Tripsina activa para su activación funcional:",
+          options: [
+            "Quimotrisinógeno, Proelastasa y Procarboxipeptidasas A y B",
+            "Exclusivamente las amilasas y lipasas",
+            "El pepsinógeno gástrico"
+          ],
+          correct: "Quimotrisinógeno, Proelastasa and Procarboxipeptidasas A y B",
+          errorFeedback: "Las enzimas de carbohidratos/lípidos no se sintetizan como zimógenos de proteasas. El pepsinógeno es estomacal. La tripsina activa la cascada de proteasas pancreáticas: quimotripsina, elastasa y carboxipeptidasas."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q2_1",
+        text: "Una mutación inactiva severamente la Enteropeptidasa intestinal. ¿Por qué este defecto detiene la digestión proteica a nivel del duodeno?",
+        options: [
+          { text: "Porque se bloquea la síntesis de bilis en la vesícula.", correct: false },
+          { text: "Porque sin enteropeptidasa no se puede formar Tripsina, impidiendo de forma secundaria la activación de todos los demás zimógenos pancreáticos.", correct: true },
+          { text: "Porque disminuye la absorción de carbohidratos simples por vía SGLT-1.", correct: false }
+        ],
+        explanation: "La enteropeptidasa es el único catalizador que activa al tripsinógeno. Al faltar la Tripsina activa, no existe quién corte proteolíticamente al resto de los zimógenos pancreáticos (quimotrisinógeno, proelastasa, procarboxipeptidasas), anulando casi por completo la digestión de las proteínas de la dieta en el intestino delgado."
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "3. Mecánica de Absorción y Similitud con la Glucosa",
+    organ: "Membrana del Enterocito",
+    subtitle: "Cotransporte Activo Secundario",
+    concept: "La absorción de aminoácidos libres depende del simporte acoplado al Sodio (Na+), impulsado indirectamente por la Na+/K+-ATPasa, idéntico al mecanismo de la glucosa (SGLT-1).",
+    simulation: {
+      instructions: "Establece los transportadores y gradientes correctos para movilizar los aminoácidos hacia la circulación sanguínea.",
+      template: "Lumen Intestinal ➔ [ Aminoácido + Na+ ] (Cotransportador Simportador) ➔ [ Bomba Na+/K+ ATPasa ]",
+      dropdowns: [
+        {
+          id: "s3_1",
+          label: "Paso 1: ¿Qué ion luminal debe unirse obligatoriamente al transportador para simportar el aminoácido libre?",
+          options: ["Potasio (K+)", "Sodio (Na+)", "Calcio (Ca++)"],
+          correct: "Sodio (Na+)",
+          errorFeedback: "Incorrecto. La membrana luminal requiere el ion Sodio (Na+) a favor de su gradiente electroquímico para arrastrar cooperativamente al aminoácido."
+        },
+        {
+          id: "s3_2",
+          label: "Paso 2: ¿Qué mecanismo mantiene el gradiente de sodio bajo dentro de la célula gastando energía directa (ATP)?",
+          options: ["La Bomba Na+/K+ ATPasa basolateral", "El transportador GLUT-2", "La difusión facilitada de aminoácidos"],
+          correct: "La Bomba Na+/K+ ATPasa basolateral",
+          errorFeedback: "Incorrecto. Los GLUT son de difusión facilitada (no gastan ATP). El gradiente de Sodio se mantiene por la Bomba Na+/K+ ATPasa basolateral, consumiendo ATP para bombear Sodio fuera del enterocito."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q3_1",
+        text: "¿Qué similitud y dependencia de transporte presenta la absorción luminal de aminoácidos con la de la glucosa?",
+        options: [
+          { text: "Ambos procesos son puramente pasivos por difusión simple.", correct: false },
+          { text: "Ambos dependen de un transportador acoplado al simporte de Sodio (Na+), requiriendo energía indirecta generada por la Na+/K+-ATPasa basolateral.", correct: true },
+          { text: "Ambos requieren secreción activa de insulina a la luz intestinal.", correct: false }
+        ],
+        explanation: "La glucosa ingresa por el simportador SGLT-1 y los aminoácidos por simportadores específicos; ambos acoplan la entrada del nutriente al ingreso de Sodio. Ambos dependen críticamente de que la Bomba Na+/K+ ATPasa mantenga la concentración interna de Sodio baja, consumiendo energía de forma indirecta (transporte activo secundario)."
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "4. Dinámica del Enterocito y el Ácido Fólico (B9)",
+    organ: "Mucosa Intestinal",
+    subtitle: "Combustible Celular & Mitosis de Microvellosidades",
+    concept: "Los enterocitos prefieren metabolizar Glutamina por encima de la glucosa, y dependen de la Vitamina B9 (Ácido Fólico) para sostener la replicación del ADN de su rápido recambio celular.",
+    simulation: {
+      instructions: "Determina el destino metabólico de los combustibles y cofactores en el enterocito.",
+      template: "Combustible Celular: [ Glutamina ] ➔ Energía Mitocondrial | Replicación Celular: [ Ácido Fólico (B9) ]",
+      dropdowns: [
+        {
+          id: "s4_1",
+          label: "Paso 1: ¿Cuál es el aminoácido y combustible metabólico preferido del enterocito en el ayuno?",
+          options: ["Glucosa plasmática", "Glutamina", "Ácido Palmítico"],
+          correct: "Glutamina",
+          errorFeedback: "Incorrecto. Aunque la glucosa abunda, el enterocito la deja pasar intacta a la vena porta. Su combustible respiratorio preferido es la Glutamina."
+        },
+        {
+          id: "s4_2",
+          label: "Paso 2: ¿En qué vía bioquímica crítica participa la coenzima del Ácido Fólico (B9) dentro del enterocito?",
+          options: ["Síntesis de nucleótidos (Timidilato y Purinas) para la replicación del ADN", "Beta-oxidación de lípidos", "Glucogenólisis muscular"],
+          correct: "Síntesis de nucleótidos (Timidilato y Purinas) para la replicación del ADN",
+          errorFeedback: "Incorrecto. El folato (B9) actúa como transportador de unidades monocarbonadas indispensable para sintetizar timina y purinas, permitiendo que la célula duplique su material genético durante la mitosis."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q4_1",
+        text: "¿Por qué una deficiencia severa de Ácido Fólico (B9) causa atrofia de las microvellosidades del intestino?",
+        options: [
+          { text: "Porque inhibe alostéricamente las enzimas salivales.", correct: false },
+          { text: "Porque los enterocitos tienen un recambio extremadamente rápido (3-5 días) y, sin B9, se detiene la replicación de ADN y la mitosis necesaria para renovar la mucosa.", correct: true },
+          { text: "Porque bloquea la síntesis de ácidos biliares hepáticos.", correct: false }
+        ],
+        explanation: "Las vellosidades intestinales se renuevan continuamente cada 3 a 5 días mediante mitosis de las células de las criptas. Sin Ácido Fólico (B9), se bloquea la síntesis de nucleótidos de Purina y Timidilato, impidiendo la replicación del ADN y el ciclo celular, lo que conduce a atrofia de la mucosa y síndrome de malabsorción."
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "5. La Ecuación Completa de la ALAT Hepática",
+    organ: "Hepatocito (Citosol)",
+    subtitle: "Transaminación Reversible & El Filtro de BCAA",
+    concept: "La Alanina Aminotransferasa (ALAT) requiere obligatoriamente Fosfato de Piridoxal (B6) para transferir el grupo amino al α-cetoglutarato, rindiendo piruvato y glutamato. El hígado no puede metabolizar BCAA de forma masiva.",
+    simulation: {
+      instructions: "Completa la reacción molecular exacta de la ALAT (GPT) citosólica hepática.",
+      template: "Ecuación Hepática: Alanina + [ α-Cetoglutarato ] ⇄ [ Piruvato ] + [ Glutamato ] (Cofactor: B6 / PLP)",
+      dropdowns: [
+        {
+          id: "s5_1",
+          label: "Reactivos: [ Alanina ] + [ α-cetoácido aceptor ]: ⇄ Productos. Selecciona el aceptor universal de nitrógeno:",
+          options: ["Oxaloacetato", "α-Cetoglutarato", "Piruvato"],
+          correct: "α-Cetoglutarato",
+          errorFeedback: "Incorrecto. El oxaloacetato es el aceptor de la ASAT (GOT). El piruvato es el producto desaminado de la alanina. El aceptor correcto de transaminación en la ALAT es el α-Cetoglutarato."
+        },
+        {
+          id: "s5_2",
+          label: "Cofactor vitamínico esencial requerido por la aminotransferasa:",
+          options: ["Fosfato de Piridoxal (PLP / Vitamina B6)", "Tiamina Pirofosfato (TPP / Vitamina B1)", "FAD"],
+          correct: "Fosfato de Piridoxal (PLP / Vitamina B6)",
+          errorFeedback: "Incorrecto. El TPP participa en descarboxilaciones oxidativas y el FAD en óxido-reducciones. Las transaminasas requieren de forma absoluta Fosfato de Piridoxal (PLP, Vitamina B6)."
+        },
+        {
+          id: "s5_3",
+          label: "Productos: Esqueleto de carbonos libre + Aminoácido concentrador. Selecciona el par correspondiente de productos de la ALAT:",
+          options: ["Oxaloacetato + Aspartato", "Piruvato + Glutamato", "Acetil-CoA + Glutamina"],
+          correct: "Piruvato + Glutamato",
+          errorFeedback: "Incorrecto. Al retirar el grupo amino de la Alanina, su esqueleto remanente se convierte en Piruvato y el α-cetoglutarato que recibió el nitrógeno se transforma en Glutamato."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q5_1",
+        text: "Durante el estado de saciedad postprandial, los Aminoácidos de Cadena Ramificada (BCAA: Valina, Leucina, Isoleucina) son catabolizados masivamente en el tejido hepático. ¿Es verdadera o falsa esta afirmación?",
+        options: [
+          { text: "Verdadera. El hígado degrada el 100% de los aminoácidos esenciales absorbidos.", correct: false },
+          { text: "Falsa. El hígado carece de niveles significativos de transaminasas específicas de cadena ramificada (BCAAT), por lo que los BCAA pasan de largo hacia el músculo esquelético para su degradación.", correct: true }
+        ],
+        explanation: "El hígado no expresa la enzima aminotransferasa de aminoácidos de cadena ramificada. Los BCAA (Valina, Leucina, Isoleucina) absorbidos en el enterocito evitan el metabolismo hepático de primer paso, viajan por la circulación sistémica y son captados por tejidos periféricos, principalmente el músculo esquelético, para ser oxidados o utilizados en síntesis proteica."
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: "6. Transportadores Sanguíneos Seguros",
+    organ: "Torrente Sanguíneo",
+    subtitle: "Evitando la Neurotoxicidad por Amoníaco",
+    concept: "El amoníaco libre (NH3) es altamente neurotóxico. Los tejidos periféricos deben empaquetar el amoníaco en vehículos inocuos como la Glutamina y la Alanina para su transporte seguro al hígado.",
+    simulation: {
+      instructions: "Configura las reacciones de detoxificación y transporte de nitrógeno desde la periferia.",
+      template: "Luz tisular ➔ [ Glutamina Sintetasa ] (Empaqueta NH3 gastando ATP) ⇄ Músculo: Piruvato ➔ [ Alanina ]",
+      dropdowns: [
+        {
+          id: "s6_1",
+          label: "Paso 1: ¿Qué reacción de síntesis empaqueta de forma segura el amoníaco libre (NH3) en la mayoría de los tejidos extrahepáticos?",
+          options: [
+            "Glutamato + NH3 + ATP ➔ Glutamina + ADP + Pi (Glutamina Sintetasa)",
+            "Glutamina + H2O ➔ Glutamato + NH4+ (Glutaminasa)",
+            "Piruvato + Glutamato ⇄ Alanina + α-Cetoglutarato (ALAT)"
+          ],
+          correct: "Glutamato + NH3 + ATP ➔ Glutamina + ADP + Pi (Glutamina Sintetasa)",
+          errorFeedback: "Incorrecto. La glutaminasa libera amoníaco libre (se usa para desintoxicar en hígado/riñón). El amoníaco tisular se fija de forma segura en Glutamina por acción de la Glutamina Sintetasa gastando ATP."
+        },
+        {
+          id: "s6_2",
+          label: "Paso 2: ¿Qué aminoácido transfiere nitrógeno y carbonos desde el músculo en ejercicio acoplado a la glucólisis anaeróbica?",
+          options: ["Alanina", "Aspartato", "Ornitina"],
+          correct: "Alanina",
+          errorFeedback: "Incorrecto. El músculo transamina el piruvato derivado de la glucólisis vigorosa para formar Alanina (Ciclo de la Glucosa-Alanina), transportando nitrógeno de forma segura."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q6_1",
+        text: "¿Por qué el amoníaco libre (NH3) es extremadamente neurotóxico para el Sistema Nervioso Central?",
+        options: [
+          { text: "Bloquea mecánicamente los vasos sanguíneos cerebrales.", correct: false },
+          { text: "Atraviesa la barrera hematoencefálica y, en el astrocito, la síntesis masiva de Glutamina agota el ATP y el Glutamato mitocondrial, privando a la neurona de precursores de GABA y generando edema cerebral osmótico.", correct: true },
+          { text: "Aumenta la viscosidad de la mielina bloqueando la sinapsis eléctrica.", correct: false }
+        ],
+        explanation: "El $NH_3$ libre difunde al SNC. Los astrocitos intentan detoxificarlo convirtiendo Glutamato en Glutamina vía Glutamina Sintetasa. Esto consume ATP y agota las reservas de Glutamato (precursor directo de neurotransmisores clave: el excitatorio Glutamato y el inhibidor GABA). Además, la acumulación intracelular de Glutamina en los astrocitos actúa como un osmólito potente, arrastrando agua y causando edema cerebral grave."
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: "7. La Desaminación Oxidativa Hepática (GDH)",
+    organ: "Matriz Mitocondrial (Hígado)",
+    subtitle: "La Válvula de Escape Mitocondrial",
+    concept: "La Glutamato Deshidrogenasa (GDH) mitocondrial oxida al glutamato para liberar amoníaco libre (NH4+) y regenerar α-cetoglutarato, regulada estrictamente por los niveles de energía de la célula.",
+    simulation: {
+      instructions: "Configura la reacción catabólica de la GDH y sus parámetros de regulación alostérica.",
+      template: "Desaminación Oxidativa: Glutamato + [ NAD+ ] + H2O ⇄ α-Cetoglutarato + NH4+ + NADH | Activador: [ ADP ]",
+      dropdowns: [
+        {
+          id: "s7_1",
+          label: "Paso 1: ¿Qué cofactor de óxido-reducción se reduce a NADH (o NADPH) durante la desaminación oxidativa del Glutamato?",
+          options: ["NAD+ (o NADP+)", "FAD", "Coenzima Q"],
+          correct: "NAD+ (o NADP+)",
+          errorFeedback: "Incorrecto. El FAD y la CoQ participan en la cadena de transporte de electrones lipídica. La GDH mitocondrial es única al poder utilizar NAD+ (vía degradativa) o NADP+ (vía sintética)."
+        },
+        {
+          id: "s7_2",
+          label: "Paso 2: ¿Qué nucleótido actúa como activador alostérico de la GDH al detectar baja energía celular?",
+          options: ["ATP", "ADP", "GTP"],
+          correct: "ADP",
+          errorFeedback: "Incorrecto. El ATP and el GTP indican alta energía (carga energética elevada) e inhiben a la GDH. El ADP es el indicador de escasez de energía que activa la enzima."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q7_1",
+        text: "¿Cuál es la consecuencia de la regulación alostérica de la GDH por el ADP?",
+        options: [
+          { text: "Estimula la síntesis de glucógeno para reservar energía.", correct: false },
+          { text: "Acelera la liberación de α-cetoglutarato, el cual ingresa directamente al Ciclo de Krebs para generar NADH y ATP durante estados de déficit energético.", correct: true },
+          { text: "Inhibe la degradación del glutamato para conservar aminoácidos esenciales.", correct: false }
+        ],
+        explanation: "Al activarse la GDH por niveles elevados de ADP, se acesera la conversión de Glutamato en $\\alpha$-cetoglutarato. Este intermediario de Krebs alimenta de manera anaplerótica el ciclo, estimulando la producción mitocondrial de energía en forma de NADH, $FADH_2$ y subsecuentemente ATP."
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: "8. El Marcapasos de la Urea (CPS-I)",
+    organ: "Matriz Mitocondrial & Citosol Hepático",
+    subtitle: "Regulación por N-Acetilglutamato (NAG) y la Inserción del 2do Nitrógeno",
+    concept: "La Carbamil Fosfato Sintetasa I (CPS-I) es la enzima limitante del ciclo de la urea. Requiere obligatoriamente N-acetilglutamato como activador alostérico y consume 2 ATP. El segundo nitrógeno entra vía Aspartato.",
+    simulation: {
+      instructions: "Ensambla la reacción mitocondrial limitante del ciclo de la urea y define el flujo citosólico secundario.",
+      template: "Paso Marcapasos: CO2 + NH4+ + 2 ATP --[ CPS-I + NAG ]--> Carbamil Fosfato ➔ Segundo Nitrógeno: [ Aspartato ]",
+      dropdowns: [
+        {
+          id: "s8_1",
+          label: "Paso 1: ¿Qué molécula abre el candado alostérico de la enzima CPS-I mitocondrial?",
+          options: ["Acetil-CoA", "N-Acetilglutamato (NAG)", "Fumarato"],
+          correct: "N-Acetilglutamato (NAG)",
+          errorFeedback: "Incorrecto. La Acetil-CoA es solo un precursor de síntesis. El Fumarato es un metabolito de salida. El NAG es el activador alostérico obligatorio específico de la CPS-I."
+        },
+        {
+          id: "s8_2",
+          label: "Paso 2: ¿Cuántas moléculas de ATP consume obligatoriamente la CPS-I para formar Carbamil Fosfato?",
+          options: ["1 ATP", "2 ATP", "0 ATP (es exergónica)"],
+          correct: "2 ATP",
+          errorFeedback: "Incorrecto. La fijación del amoníaco mitocondrial al bicarbonato por la CPS-I requiere de forma estricta la hidrólisis de 2 ATP."
+        },
+        {
+          id: "s8_3",
+          label: "Paso 3: ¿Qué intermediario citosólico cede el segundo nitrógeno para formar Argininosuccinato y cerrar el ciclo?",
+          options: ["Glutamina libre", "Aspartato", "Amoníaco libre citosólico"],
+          correct: "Aspartato",
+          errorFeedback: "Incorrecto. El segundo nitrógeno ingresa al ciclo de la urea por medio del Aspartato, rindiendo fumarato posteriormente."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q8_1",
+        text: "¿Cuál es la relevancia metabólica de la liberación de Fumarato durante el ciclo de la urea?",
+        options: [
+          { text: "Actúa como neurotransmisor inhibitorio en el cerebro.", correct: false },
+          { text: "Constituye el puente o comunicación ('bicicleta de Krebs') donde el carbono se recicla a Malato y Oxaloacetato, pudiendo entrar al Ciclo de Krebs o desviarse a Gluconeogénesis.", correct: true },
+          { text: "Se acumula en el tejido adiposo para sintetizar triacilglicéridos.", correct: false }
+        ],
+        explanation: "El fumarato producido citosólicamente por la argininosuccinato liasa es convertido en Malato por la fumarasa citosólica. El malato puede ingresar a la mitocondria para el ciclo de Krebs o ser oxidado a Oxaloacetato citosólico por la malato deshidrogenasa, ingresando a la vía gluconeogénica."
+      }
+    ]
+  },
+  {
+    id: 9,
+    title: "9. Amortiguamiento Renal en la Acidosis",
+    organ: "Células del Túbulo Renal",
+    subtitle: "Cooperación entre Glutaminasa y Equilibrio Ácido-Base",
+    concept: "Durante la acidosis (como en la cetoacidosis diabética), el riñón extrae glutamina del plasma para desaminarla vía glutaminasa. El NH3 libre neutraliza protones (H+) en la orina formando NH4+, facilitando la excreción de ácido y ahorrando Bicarbonato.",
+    simulation: {
+      instructions: "Modula la respuesta renal fisiológica ante un pH plasmático críticamente ácido.",
+      template: "Acidosis Metabólica: Glutamina (Plasma) ➔ Renal ➔ [ Glutaminasa ] ➔ NH3 + H+ ➔ [ NH4+ ] (Buffer Orina)",
+      dropdowns: [
+        {
+          id: "s9_1",
+          label: "Paso 1: ¿Qué enzima corta a la glutamina dentro del enterocito o célula renal para liberar el amoníaco?",
+          options: ["Glutamina Sintetasa", "Glutaminasa", "Glutamina transaminasa"],
+          correct: "Glutaminasa",
+          errorFeedback: "Incorrecto. La sintetasa une amoníaco gastando energía. La enzima hidrolítica mitocondrial que libera amoníaco libre ($NH_4^+$) a partir de glutamina es la Glutaminasa."
+        },
+        {
+          id: "s9_2",
+          label: "Paso 2: ¿Cómo ayuda bioquímicamente el amoníaco (NH3) liberado en la luz del túbulo renal a elevar el pH sanguíneo?",
+          options: [
+            "Actúa como aceptor de protones (NH3 + H+ ➔ NH4+), amortiguando la acidez luminal y permitiendo excretar protones de forma segura en la orina.",
+            "Inhibiendo de manera competitiva a los transportadores de sodio luminales.",
+            "Desnaturalizando los cuerpos cetónicos ácidos circulantes."
+          ],
+          correct: "Actúa como aceptor de protones (NH3 + H+ ➔ NH4+), amortiguando la acidez luminal y permitiendo excretar protones de forma segura en la orina.",
+          errorFeedback: "Incorrecto. El NH3 es una base débil gaseosa que difunde al túbulo. Allí atrapa de manera espontánea protones de ácido libres ($H^+$) generados por la cetoacidosis, transformándose en el ion amonio cargado ($NH_4^+$), el cual no puede reabsorberse y se excreta, eliminando ácido neto."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q9_1",
+        text: "En un paciente con Diabetes Tipo 1 descompensada con cetoacidosis severa, ¿cómo se altera el flujo interorgánico de la glutamina?",
+        options: [
+          { text: "El riñón disminuye su consumo para evitar sobrecargar al hígado.", correct: false },
+          { text: "El riñón extrae masivamente Glutamina de la sangre a expensas de otros órganos, utilizándola para la amoniogénesis renal amortiguadora de protones.", correct: true },
+          { text: "La glutamina se polimeriza en el bazo reduciendo la excreción de urea.", correct: false }
+        ],
+        explanation: "En la cetoacidosis metabólica diabética, el riñón se convierte en el consumidor de glutamina dominante en el organismo. Bajo regulación del pH bajo, se induce la expresión de la glutaminasa renal para producir amoníaco tubular ($NH_3$). Este amoníaco neutraliza los $H^+$ eliminándolos como amonio, lo que permite restaurar el bicarbonato y amortiguar el pH de la sangre."
+      }
+    ]
+  },
+  {
+    id: 10,
+    title: "10. Sepsis y Estado Hipercatabólico",
+    organ: "SNC - Músculo - Sistema Inmune",
+    subtitle: "Fisiopatología del Cortisol",
+    concept: "La sepsis y el estrés grave gatillan la liberación masiva de cortisol. Esto induce proteólisis del músculo esquelético, generando un balance nitrogenado negativo para abastecer de sustratos al sistema inmune y sostener la neoglucogénesis de estrés.",
+    simulation: {
+      instructions: "Define la cascada de flujos metabólicos integrados coordinada por el cortisol durante la sepsis.",
+      template: "Estrés Séptico: Cortisol ➔ [ Proteólisis Muscular ] ➔ Glutamina para [ Sistema Inmune ] + Alanina para [ Neoglucogénesis ]",
+      dropdowns: [
+        {
+          id: "s10_1",
+          label: "Paso 1: ¿Cuál es el efecto del Cortisól elevado sobre las proteínas del músculo esquelético?",
+          options: ["Estimular la síntesis de nuevas proteínas contráctiles", "Inducir la proteólisis masiva por vía de ubiquitina-proteasoma, liberando aminoácidos libres", "Bloquear la salida de alanina muscular"],
+          correct: "Inducir la proteólisis masiva por vía de ubiquitina-proteasoma, liberando aminoácidos libres",
+          errorFeedback: "Incorrecto. El cortisol es un glucocorticoide catabólico sobre el músculo. Induce la degradación de proteínas estructurales para proveer aminoácidos libres."
+        },
+        {
+          id: "s10_2",
+          label: "Paso 2: ¿A qué células se destina la Glutamina muscular liberada en la sepsis para permitir su proliferación rápida?",
+          options: ["Eritrocitos maduros", "Células del sistema inmunológico (Linfocitos, Macrófagos)", "Células musculares lisas de las arterias"],
+          correct: "Células del sistema inmunológico (Linfocitos, Macrófagos)",
+          errorFeedback: "Incorrecto. Los eritrocitos maduros carecen de mitocondrias y no oxidan glutamina. Las células inmunes que se dividen rápidamente usan la glutamina como donante de nitrógeno para purinas (mitosis) y energía."
+        },
+        {
+          id: "s10_3",
+          label: "Paso 3: ¿Qué tipo de balance de nitrógeno general se observa en un paciente séptico bajo este estímulo hormonal?",
+          options: ["Balance nitrogenado positivo", "Balance nitrogenado neutro", "Balance nitrogenado negativo"],
+          correct: "Balance nitrogenado negativo",
+          errorFeedback: "Incorrecto. Debido a la proteólisis masiva y desaminación para gluconeogénesis de estrés, la excreción de nitrógeno (urea) es mucho mayor que la ingesta proteica, determinando un balance negativo."
+        }
+      ]
+    },
+    questions: [
+      {
+        id: "q10_1",
+        text: "¿Por qué el tratamiento de un paciente hipercatabólico incluye sostener un aporte energético adecuado a pesar de la proteólisis muscular?",
+        options: [
+          { text: "Para evitar la acumulación de cuerpos cetónicos en el páncreas.", correct: false },
+          { text: "Para atenuar la proteólisis muscular sostenida mediada por cortisol al proveer fuentes de carbohidratos, limitando la degradación de proteínas corporales esenciales.", correct: true },
+          { text: "Para inhibir la expresión de la pepsina duodenal.", correct: false }
+        ],
+        explanation: "Si se aporta glucosa o nutrición enteral adecuada, se estimula la liberación de Insulina en proporciones moderadas. La insulina antagoniza de manera parcial el efecto del cortisol, limitando la degradación de masa muscular esquelética y reduciendo la pérdida de proteínas contráctiles y respiratorias críticas del paciente."
+      }
+    ]
+  }
+];
+
+const GLUCOGENIC_CETOGENIC_POOL = [
+  { name: "Leucina", type: "cetogenico" },
+  { name: "Lisina", type: "cetogenico" },
+  { name: "Alanina", type: "glucogenico" },
+  { name: "Aspartato", type: "glucogenico" },
+  { name: "Glutamato", type: "glucogenico" },
+  { name: "Valina", type: "glucogenico" }
+];
+
+export default function App() {
+  const [appMode, setAppMode] = useState('menu'); // 'menu', 'training', 'results'
+  const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
+  
+  // Scoring parameters for feedback
+  const [userDropdownAnswers, setUserDropdownAnswers] = useState({}); // drop_id: string
+  const [userQuestionAnswers, setUserQuestionAnswers] = useState({}); // q_id: index
+  const [showDirectValidation, setShowDirectValidation] = useState({}); // drop_id: bool
+  
+  // Carbon Sorting Game state
+  const [carbonPool, setCarbonPool] = useState(GLUCOGENIC_CETOGENIC_POOL.map(item => ({ ...item, placed: false })));
+  const [sortingAnswers, setSortingAnswers] = useState({ glucogenico: [], cetogenico: [] });
+
+  // Custom feedback Modal alert
+  const [feedback, setFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+
+  const startTrainingMode = () => {
+    resetProgress();
+    setAppMode('training');
+  };
+
+  const resetProgress = () => {
+    setCurrentLevelIdx(0);
+    setUserDropdownAnswers({});
+    setUserQuestionAnswers({});
+    setShowDirectValidation({});
+    setSortingAnswers({ glucogenico: [], cetogenico: [] });
+    setCarbonPool(GLUCOGENIC_CETOGENIC_POOL.map(item => ({ ...item, placed: false })));
+    setFeedback(null);
+  };
+
+  const handleDropdownChange = (dropdownId, selectedValue, correctAnswer, errorText) => {
+    setUserDropdownAnswers(prev => ({ ...prev, [dropdownId]: selectedValue }));
+    setShowDirectValidation(prev => ({ ...prev, [dropdownId]: true }));
+    
+    if (selectedValue !== correctAnswer) {
+      setFeedback({
+        title: "Error Estequiométrico / Mecanicista",
+        text: errorText,
+        type: "error"
+      });
+    } else {
+      setFeedback({
+        title: "Paso de Reacción Válido",
+        text: "¡Correcto! El flujo y los componentes corresponden a la fisiología bioquímica humana descrita.",
+        type: "success"
+      });
+    }
+  };
+
+  const handleQuestionSelect = (questionId, optionIdx, isCorrect, explanation) => {
+    setUserQuestionAnswers(prev => ({ ...prev, [questionId]: optionIdx }));
+    
+    if (isCorrect) {
+      setFeedback({
+        title: "Justificación Válida",
+        text: explanation,
+        type: "success"
+      });
+    } else {
+      setFeedback({
+        title: "Falla de Integración",
+        text: "La opción seleccionada es incorrecta. " + explanation,
+        type: "error"
+      });
+    }
+  };
+
+  const handlePlaceCarbon = (item, destination) => {
+    if (destination === 'glucogenico' && (item.name === 'Leucina' || item.name === 'Lisina')) {
+      setFeedback({
+        title: "Error de Parcial Grave",
+        text: `La Leucina y la Lisina son los únicos dos aminoácidos del metabolismo humano exclusivamente cetogénicos. Sus carbonos forman Acetil-CoA y Acetoacetato; no pueden rendir piruvato ni intermediarios netos de Krebs para la gluconeogénesis hepática.`,
+        type: "error"
+      });
+      return;
+    }
+
+    setSortingAnswers(prev => ({
+      ...prev,
+      [destination]: [...prev[destination], item]
+    }));
+    setCarbonPool(prev => prev.map(p => p.name === item.name ? { ...p, placed: true } : p));
+  };
+
+  const handleNextLevel = () => {
+    const currentLevel = LEVELS[currentLevelIdx];
+    const allDropdownsAnswered = currentLevel.simulation.dropdowns.every(d => userDropdownAnswers[d.id]);
+    
+    if (!allDropdownsAnswered) {
+      setFeedback({
+        title: "Parámetros Incompletos",
+        text: "Debes configurar todas las variables del Reconstructor Estequiométrico en este compartimiento celular antes de avanzar.",
+        type: "info"
+      });
+      return;
+    }
+
+    if (currentLevelIdx < LEVELS.length - 1) {
+      setCurrentLevelIdx(prev => prev + 1);
+    } else {
+      triggerEvaluation();
+    }
+  };
+
+  const triggerEvaluation = () => {
+    let scoreCalculated = 0;
+    let totalItemsEvaluated = 0;
+
+    LEVELS.forEach(lvl => {
+      lvl.simulation.dropdowns.forEach(d => {
+        totalItemsEvaluated++;
+        if (userDropdownAnswers[d.id] === d.correct) {
+          scoreCalculated++;
+        }
+      });
+      lvl.questions.forEach(q => {
+        totalItemsEvaluated++;
+        const chosenIdx = userQuestionAnswers[q.id];
+        if (chosenIdx !== undefined && q.options[chosenIdx]?.correct) {
+          scoreCalculated++;
+        }
+      });
+    });
+
+    carbonPool.forEach(item => {
+      totalItemsEvaluated++;
+      const isInGlucogenico = sortingAnswers.glucogenico.some(x => x.name === item.name);
+      const isInCetogenicos = sortingAnswers.cetogenico.some(x => x.name === item.name);
+      
+      if (item.type === 'glucogenico' && isInGlucogenico) scoreCalculated++;
+      if (item.type === 'cetogenico' && isInCetogenicos) scoreCalculated++;
+    });
+
+    const finalPercent = Math.round((scoreCalculated / totalItemsEvaluated) * 100);
+    setScore(finalPercent);
+    setAppMode('results');
+  };
+
+  const generateDiagnosticRoadmap = () => {
+    const focusAreas = [];
+    LEVELS.forEach((lvl) => {
+      let levelHasMistake = false;
+      lvl.simulation.dropdowns.forEach(d => {
+        if (userDropdownAnswers[d.id] !== d.correct) levelHasMistake = true;
+      });
+      lvl.questions.forEach(q => {
+        const chosen = userQuestionAnswers[q.id];
+        if (chosen === undefined || !q.options[chosen]?.correct) levelHasMistake = true;
+      });
+
+      if (levelHasMistake) {
+        focusAreas.push(lvl);
+      }
+    });
+    return focusAreas;
+  };
+
+  const diagnostics = generateDiagnosticRoadmap();
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-slate-900">
+      
+      {/* Header Bar */}
+      <header className="bg-slate-900/90 border-b border-teal-500/20 px-6 py-4 sticky top-0 z-40 backdrop-blur-md shadow-lg">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-teal-500/10 rounded-xl border border-teal-500/30">
+              <Activity className="h-6 w-6 text-teal-400 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-teal-400 to-indigo-400 bg-clip-text text-transparent">
+                Lab Virtual de Nitrógeno
+              </h1>
+              <p className="text-xs text-slate-400">Entrenamiento Fisiológico & Clínico</p>
+            </div>
+          </div>
+
+          {appMode !== 'menu' && (
+            <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-teal-500/10 text-teal-300 border border-teal-500/20">
+              Módulo de Estudio Interactivo
+            </span>
+          )}
+        </div>
+      </header>
+
+      {/* Main Workspace Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 pb-24">
+        
+        {/* --- STATE: MENU --- */}
+        {appMode === 'menu' && (
+          <div className="max-w-4xl mx-auto py-12">
+            <div className="text-center mb-12">
+              <span className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-teal-400 bg-teal-500/10 rounded-full border border-teal-500/20">
+                Cátedra UAI - Bioquímica II Médica
+              </span>
+              <h1 className="text-4xl md:text-5xl font-black mt-4 bg-gradient-to-r from-teal-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent">
+                Fisiología y Metabolismo de Aminoácidos
+              </h1>
+              <p className="mt-4 text-base text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                Este simulador de entrenamiento te forzará a estructurar de manera estricta las ecuaciones bioquímicas de transdesaminación, absorción luminal y control de la urea de tus exámenes de la UAI. Desarrolla el razonamiento clínico en cada paso.
+              </p>
+            </div>
+
+            <div className="max-w-md mx-auto">
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center text-teal-400 mb-4 mx-auto">
+                    <BookOpen size={28} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-100 text-center mb-2">Entrenamiento Integrado</h3>
+                  <p className="text-slate-400 text-sm text-center leading-relaxed mb-6">
+                    Aprende las rutas de nitrógeno con consejos de cátedra inmediatos. Reconstruye estequiométricamente las reacciones reales y desglosa la clasificación de carbonos al final.
+                  </p>
+                </div>
+                <button 
+                  onClick={startTrainingMode}
+                  className="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-teal-500/20 transition duration-200 flex items-center justify-center gap-2"
+                >
+                  Comenzar Entrenamiento
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Curriculum Alignment Cards */}
+            <div className="mt-12 bg-slate-900/50 rounded-xl p-6 border border-slate-800">
+              <h4 className="text-md font-semibold text-teal-400 mb-4 flex items-center gap-2">
+                <Activity className="h-5 w-5" /> Temario Específico de Parciales UAI
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-400">
+                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                  <strong className="text-slate-200 block mb-1">Digestión y Borde en Cepillo</strong>
+                  Cortes enzimáticos autocatalíticos estomacales, cascada activa duodenal por enteropeptidasa y simporte con Sodio.
+                </div>
+                <div className="p-3 bg-slate-900 rounded-lg border border-slate-800">
+                  <strong className="text-slate-100 block mb-1">Ecuación de la ALAT & GDH</strong>
+                  Transaminación reversible hepatocitaria con cofactor PLP (Vitamina B6). Desaminación por la GDH regulada por ADP/GTP.
+                </div>
+                <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <strong className="text-slate-100 block mb-1">Ciclo de la Urea & Riñón</strong>
+                  Enzima CPS-I alostérica por NAG. Desintoxicación astrocitaria cerebral y amoniogénesis amortiguadora de pH en acidosis renal.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- STATE: ACTIVE TRAINING SESSION --- */}
+        {appMode === 'training' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* Left Nav Map */}
+              <div className="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block px-1 mb-2">Compartimientos</span>
+                {LEVELS.map((lvl, index) => {
+                  const isCurrent = currentLevelIdx === index;
+                  const isCompleted = lvl.simulation.dropdowns.every(d => userDropdownAnswers[d.id] !== undefined && userDropdownAnswers[d.id] !== "");
+                  return (
+                    <button
+                      key={lvl.id}
+                      onClick={() => setCurrentLevelIdx(index)}
+                      className={`w-full text-left p-2.5 rounded-lg text-xs transition flex items-center justify-between ${
+                        isCurrent 
+                          ? 'bg-teal-500/10 border border-teal-500/40 text-teal-400 font-bold' 
+                          : 'bg-slate-950/40 border border-transparent text-slate-400 hover:bg-slate-800/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="font-mono opacity-50 text-[10px]">0{index+1}</span>
+                        <span className="truncate">{lvl.title}</span>
+                      </div>
+                      {isCompleted && (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-teal-400 flex-shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Active Workspace */}
+              <div className="lg:col-span-9 space-y-6">
+                
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                  {/* Meta details */}
+                  <div className="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                    <div>
+                      <span className="text-[10px] font-mono tracking-widest text-teal-400 uppercase px-2 py-0.5 bg-teal-500/5 rounded border border-teal-500/10">{LEVELS[currentLevelIdx].organ}</span>
+                      <h2 className="text-xl font-black text-slate-100 mt-2">{LEVELS[currentLevelIdx].title}</h2>
+                      <p className="text-xs text-slate-400 mt-0.5">{LEVELS[currentLevelIdx].subtitle}</p>
+                    </div>
+                    <span className="text-xs font-mono text-slate-500">Módulo {currentLevelIdx + 1} de {LEVELS.length}</span>
+                  </div>
+
+                  {/* Infografía Explicativa (Exclusivo para los primeros 3 niveles) */}
+                  {currentLevelIdx < 3 && (
+                    <div className="mb-6 bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-teal-400 font-bold uppercase tracking-wider">
+                        <Info size={14} />
+                        <span>Infografía Guía: Visualización de la Digestión Proteica Secuencial</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        Usa este esquema visual para guiar tu razonamiento molecular sobre las reacciones gástricas, la cascada duodenal de zimógenos y el cotransporte luminal en el enterocito.
+                      </p>
+                      <div className="mt-2 rounded-lg border border-slate-800 overflow-hidden bg-slate-900 flex justify-center">
+                        <img 
+                          src="http://googleusercontent.com/image_generation_content/0" 
+                          alt="Visualización de la Digestión de Proteínas: Un Enfoque Molecular Secuencial" 
+                          className="max-w-full h-auto object-cover max-h-[360px]"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formula Setup Panel */}
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 mb-8 space-y-4">
+                    <div className="flex items-center gap-2 text-slate-300 font-semibold text-xs border-b border-slate-800 pb-2">
+                      <Activity size={15} className="text-teal-400" />
+                      <span>Reconstructor de Reacciones Químicas Reales</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed italic">{LEVELS[currentLevelIdx].simulation.instructions}</p>
+                    
+                    {/* Visual Blueprint Representation */}
+                    <div className="bg-slate-900/40 p-3 rounded-lg border border-slate-800 font-mono text-[11px] text-teal-400 bg-slate-950 text-center py-4">
+                      {LEVELS[currentLevelIdx].simulation.template}
+                    </div>
+
+                    <div className="space-y-5 pt-2">
+                      {LEVELS[currentLevelIdx].simulation.dropdowns.map((drop) => {
+                        const userAns = userDropdownAnswers[drop.id] || "";
+                        const displayValidation = showDirectValidation[drop.id];
+                        const isCorrect = userAns === drop.correct;
+
+                        return (
+                          <div key={drop.id} className="space-y-1.5 border-l-2 border-slate-800 pl-3">
+                            <label className="text-xs text-slate-300 block font-medium">{drop.label}</label>
+                            <div className="flex items-center gap-3">
+                              <select
+                                value={userAns}
+                                onChange={(e) => handleDropdownChange(drop.id, e.target.value, drop.correct, drop.errorFeedback)}
+                                className={`bg-slate-900 text-xs text-slate-200 border rounded-lg p-2.5 max-w-full md:max-w-xl w-full focus:outline-none focus:border-teal-500 ${
+                                  displayValidation 
+                                    ? isCorrect ? 'border-emerald-500 text-emerald-300 bg-emerald-500/5' : 'border-rose-500 text-rose-300 bg-rose-500/5'
+                                    : 'border-slate-800'
+                                }`}
+                              >
+                                <option value="" disabled>-- Selecciona la opción termodinámicamente válida --</option>
+                                {drop.options.map((opt, oIdx) => (
+                                  <option key={oIdx} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                              
+                              {displayValidation && (
+                                <span>
+                                  {isCorrect 
+                                    ? <CheckCircle2 className="text-emerald-400 h-5 w-5 flex-shrink-0" /> 
+                                    : <XCircle className="text-rose-400 h-5 w-5 flex-shrink-0" />
+                                  }
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Associated Test Questions */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5">
+                      <HelpCircle size={14} className="text-indigo-400" /> Desafío de Integración y Justificación Clínica
+                    </h3>
+                    
+                    {LEVELS[currentLevelIdx].questions.map((q) => {
+                      const selectedIdx = userQuestionAnswers[q.id];
+                      return (
+                        <div key={q.id} className="bg-slate-950/40 border border-slate-800/70 p-4 rounded-xl space-y-3">
+                          <p className="text-xs font-semibold text-slate-200">{q.text}</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {q.options.map((opt, oIdx) => {
+                              const isChosen = selectedIdx === oIdx;
+                              const hasSelection = selectedIdx !== undefined;
+                              
+                              let cardStyle = "bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800/40";
+                              if (isChosen) cardStyle = "bg-indigo-600/10 border-indigo-500 text-indigo-300 font-medium";
+                              if (hasSelection && opt.correct) cardStyle = "bg-emerald-600/10 border-emerald-500 text-emerald-400 font-bold";
+                              if (isChosen && !opt.correct) cardStyle = "bg-rose-600/10 border-rose-500 text-rose-400";
+
+                              return (
+                                <button
+                                  key={oIdx}
+                                  onClick={() => handleQuestionSelect(q.id, oIdx, opt.correct, q.explanation)}
+                                  className={`w-full text-left p-3 rounded-lg border text-xs transition flex items-start gap-2.5 ${cardStyle}`}
+                                >
+                                  <span className="font-mono opacity-40 mt-0.5">{String.fromCharCode(65 + oIdx)})</span>
+                                  <span>{opt.text}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Navigation Footer */}
+                  <div className="mt-8 pt-4 border-t border-slate-800 flex justify-end">
+                    <button
+                      onClick={handleNextLevel}
+                      className="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 px-6 rounded-lg text-xs flex items-center gap-1.5 transition shadow-lg hover:shadow-teal-600/20"
+                    >
+                      <span>{currentLevelIdx === LEVELS.length - 1 ? 'Clasificar Carbonos' : 'Siguiente Compartimiento'}</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* --- DRAG & DROP CARBON CLASSIFICATION GAME (AT THE END) --- */}
+            {currentLevelIdx === LEVELS.length - 1 && (
+              <div className="max-w-5xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                <div>
+                  <h3 className="text-base font-black text-slate-100 flex items-center gap-2">
+                    <TrendingUp className="text-emerald-400 h-5 w-5" /> Destino de los Esqueletos Carbonados (Filtro de Oro UAI)
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Directriz: Al desaminar un aminoácido, el nitrógeno se excreta como urea, pero el esqueleto de carbonos remanente ingresa a vías energéticas diferenciadas. Clasifícalos correctamente para activar la evaluación diagnóstica.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                  {/* Pool column */}
+                  <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block mb-3">Esqueletos de Aminoácidos</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {carbonPool.map((item, idx) => (
+                        <div key={idx}>
+                          {!item.placed ? (
+                            <div className="bg-slate-900/90 border border-slate-800 p-2.5 rounded-lg flex items-center justify-between text-xs text-slate-200 shadow shadow-slate-950">
+                              <span className="font-semibold text-slate-200">{item.name}</span>
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => handlePlaceCarbon(item, 'glucogenico')}
+                                  className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded text-[10px] font-bold transition"
+                                >
+                                  Gluco
+                                </button>
+                                <button
+                                  onClick={() => handlePlaceCarbon(item, 'cetogenico')}
+                                  className="bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded text-[10px] font-bold transition"
+                                >
+                                  Ceto
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-2 text-xs text-slate-500 bg-slate-950/20 text-center rounded border border-slate-900/60 font-mono italic">
+                              {item.name} clasificado
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Glucogénicos box */}
+                  <div className="bg-slate-950/60 border border-emerald-500/10 p-4 rounded-xl flex flex-col">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase block mb-3">Vía Glucogénica (Neoglucogénesis)</span>
+                    <div className="flex-1 border border-dashed border-emerald-500/20 rounded-lg p-3 space-y-2 min-h-[120px] bg-slate-900/20">
+                      {sortingAnswers.glucogenico.map((x, i) => (
+                        <div key={i} className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-xs p-2.5 rounded font-medium">
+                          {x.name} ⇄ intermediario de Krebs/Piruvato
+                        </div>
+                      ))}
+                      {sortingAnswers.glucogenico.length === 0 && (
+                        <span className="text-[11px] text-slate-500 italic block text-center pt-8">Clasifica glucogénicos aquí</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Cetogénicos box */}
+                  <div className="bg-slate-950/60 border border-amber-500/10 p-4 rounded-xl flex flex-col">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase block mb-3">Vía Cetogénica (Acetil-CoA / Cuerpos Cetónicos)</span>
+                    <div className="flex-1 border border-dashed border-amber-500/20 rounded-lg p-3 space-y-2 min-h-[120px] bg-slate-900/20">
+                      {sortingAnswers.cetogenico.map((x, i) => (
+                        <div key={i} className="bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs p-2.5 rounded font-medium">
+                          {x.name} ➔ Síntesis de cuerpos cetónicos
+                        </div>
+                      ))}
+                      {sortingAnswers.cetogenico.length === 0 && (
+                        <span className="text-[11px] text-slate-500 italic block text-center pt-8">Clasifica cetogénicos aquí</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 flex justify-end">
+                  <button
+                    onClick={triggerEvaluation}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 px-6 rounded-lg transition shadow-lg hover:shadow-indigo-600/20"
+                  >
+                    Finalizar Entrenamiento y Ver Reporte Diagnóstico
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- STATE: FINAL PERFORMANCE RESULTS & DIAGNOSIS --- */}
+        {appMode === 'results' && (
+          <div className="max-w-4xl mx-auto py-8">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-teal-400 via-indigo-500 to-emerald-400"></div>
+              
+              <h2 className="text-2xl font-black text-slate-100">Resultado del Entrenamiento Académico</h2>
+              <p className="text-xs text-slate-400 mt-1">Análisis estricto de razonamiento según las respuestas configuradas.</p>
+
+              {/* Grade */}
+              <div className="my-6 inline-block">
+                <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-950 flex flex-col justify-center items-center shadow-2xl">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Acierto Global</span>
+                  <span className={`text-4xl font-black ${score >= 60 ? 'text-teal-400' : 'text-rose-500'}`}>{score}%</span>
+                  <span className="text-[9px] text-slate-400 font-mono mt-1">Aprobación UAI: 60%</span>
+                </div>
+              </div>
+
+              {/* Feedback Diagnosis block */}
+              <div className="text-left mt-6 bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Brain size={15} /> Plan de Estudio Sugerido por la Cátedra
+                </h3>
+
+                {diagnostics.length === 0 ? (
+                  <div className="bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-lg text-emerald-300 text-xs flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <strong>¡Excelente! Dominio Molecular Sobresaliente.</strong> No has registrado fallas críticas en las ecuaciones, cofactores ni en la cascada de activación pancreática. Tu nivel de preparación es óptimo.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-400">
+                      De acuerdo a los errores estequiométricos o de justificación registrados, debes focalizar de inmediato el repaso en los siguientes temas de la cátedra:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {diagnostics.map((lvl) => (
+                        <div key={lvl.id} className="p-3.5 bg-slate-900 rounded-lg border border-slate-800/80 flex gap-2.5">
+                          <div className="p-1.5 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/10 h-fit">
+                            <AlertTriangle size={14} />
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-200 font-bold block">{lvl.title}</span>
+                            <span className="text-[10px] text-slate-500 font-mono block mt-0.5">Ubicación: {lvl.organ}</span>
+                            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">{lvl.concept}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* High Yield checklist */}
+              <div className="text-left mt-6 bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3">
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText size={15} className="text-indigo-400" /> Check-list Crítico para un 10 (Cátedra UAI)
+                </h3>
+                <ul className="text-xs text-slate-400 space-y-2.5 list-disc list-inside">
+                  <li><strong className="text-slate-300">Digestión estomacal:</strong> El HCl *desnaturaliza* proteínas (rompe puentes de hidrógeno, no enlaces peptídicos). Activa el pepsinógeno por *autocatálisis* irreversible.</li>
+                  <li><strong className="text-slate-300">Cotransporte epitelial:</strong> La absorción luminal de aminoácidos es un *simporte acoplado a Sodio (Na+)*. Depende estrictamente del gradiente generado por la Na+/K+-ATPasa basolateral.</li>
+                  <li><strong className="text-slate-300">Ecuación de la ALAT:</strong> Alanina + α-cetoglutarato ⇄ Piruvato + Glutamato. Requiere obligatoriamente *Fosfato de Piridoxal (PLP / Vitamina B6)*.</li>
+                  <li><strong className="text-slate-300">Válvula de la GDH:</strong> La Glutamato Deshidrogenasa mitocondrial es estimulada por *ADP* (baja energía) e inhibida por *GTP/ATP* (alta energía).</li>
+                  <li><strong className="text-slate-300">Regulación alostérica de la CPS-I:</strong> Requiere obligatoriamente *N-acetilglutamato (NAG)* como activador conformacional positivo. Consume *2 ATP* y el *segundo nitrógeno* ingresa como *Aspartato* citosólico.</li>
+                  <li><strong className="text-slate-300">Amortiguamiento renal:</strong> En cetoacidosis, el riñón consume *Glutamina* y mediante la *Glutaminasa* produce amoníaco tubular ($NH_3$), el cual captura protones ($H^+$) para excretarse como amonio ($NH_4^+$) de forma segura.</li>
+                </ul>
+              </div>
+
+              <button 
+                onClick={() => setAppMode('menu')}
+                className="mt-8 py-3 px-8 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg text-xs transition duration-200"
+              >
+                Volver al Menú de Inicio
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* --- DYNAMIC FEEDBACK OVERLAY / MODAL --- */}
+      {feedback && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3 mb-4">
+              {feedback.type === 'success' && <CheckCircle2 className="h-6 w-6 text-emerald-400" />}
+              {feedback.type === 'error' && <XCircle className="h-6 w-6 text-rose-500" />}
+              {feedback.type === 'info' && <Info className="h-6 w-6 text-teal-400" />}
+              <h4 className="text-xs uppercase font-black text-slate-200 tracking-wider">{feedback.title}</h4>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">{feedback.text}</p>
+            <div className="flex justify-end pt-4">
+              <button 
+                onClick={() => setFeedback(null)}
+                className="py-2 px-5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- FOOTER & CATEDRA BRANDING --- */}
+      <footer className="mt-auto bg-slate-950 border-t border-slate-900/60 py-6 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <p>© 2026 Entorno de Simulación Integrada en Medicina.</p>
+          <div className="text-center sm:text-right">
+            <span className="font-extrabold tracking-widest text-slate-400 block">COVALENTES</span>
+            <span className="text-[10px] text-slate-500 block">bioquímica para medicina - UAI</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
