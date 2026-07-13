@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Bioquímica: Metabolismo del Colesterol</title>
+    <!-- Tailwind CSS para diseño responsivo y de alta gama -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX para representación matemática y bioquímica elegante -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Barra Superior de Navegación -->
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2 rounded-lg text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">Bioquímica Lipídica</h1>
+                    <p class="text-xs text-indigo-200">Plataforma Interactiva de Medicina</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs text-indigo-300">Progreso de Estudio</p>
+                    <div class="w-32 bg-indigo-950 rounded-full h-2 mt-1 relative overflow-hidden">
+                        <div id="top-progress-bar" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-indigo-800 text-emerald-300 font-semibold text-xs px-2.5 py-1 rounded-full" id="top-progress-text">
+                    0/9 Resueltas
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col md:flex-row gap-8 w-full">
+        
+        <!-- Barra Lateral Izquierda: Progresso de Navegación -->
+        <aside class="w-full md:w-80 flex flex-col gap-6 shrink-0">
+            <!-- Menú de Niveles -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Niveles de Estudio</h3>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors bg-indigo-50 text-indigo-700">
+                        <span class="flex items-center space-x-3">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span>Panel de Inicio</span>
+                        </span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <button onclick="switchTab('nivel1')" id="btn-tab-nivel1" class="w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors hover:bg-slate-50 text-slate-700">
+                        <span class="flex items-center space-x-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <span>🔴 Nivel 1: Alta Frecuencia</span>
+                        </span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full" id="count-nivel1">0/3</span>
+                    </button>
+                    <button onclick="switchTab('nivel2')" id="btn-tab-nivel2" class="w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors hover:bg-slate-50 text-slate-700">
+                        <span class="flex items-center space-x-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span>🟡 Nivel 2: Frecuencia Media</span>
+                        </span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full" id="count-nivel2">0/4</span>
+                    </button>
+                    <button onclick="switchTab('nivel3')" id="btn-tab-nivel3" class="w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors hover:bg-slate-50 text-slate-700">
+                        <span class="flex items-center space-x-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span>🟢 Nivel 3: Conceptos Rápidos</span>
+                        </span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full" id="count-nivel3">0/2</span>
+                    </button>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Contenido Central -->
+        <main class="flex-1 min-w-0">
+
+            <!-- PANEL INICIAL (DASHBOARD) -->
+            <section id="section-dashboard" class="space-y-6">
+                <div class="bg-gradient-to-r from-indigo-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-md">
+                    <div class="relative z-10 max-w-lg">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold mt-3">Colesterol y Metabolismo Lipídico</h2>
+                        <p class="text-slate-200 mt-2 text-sm leading-relaxed">
+                            Plataforma diseñada específicamente para el razonamiento molecular e integración de casos clínicos. Domina los mecanismos reguladores que son evaluados con alta frecuencia en los exámenes médicos de bioquímica.
+                        </p>
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <button onclick="switchTab('nivel1')" class="bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-lg transition-all flex items-center space-x-1">
+                                <span>Iniciar Autoevaluación</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Elemento decorativo visual en SVG -->
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-white hidden lg:block">
+                        <svg class="w-80 h-80" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Metas de estudio e indicaciones de examen -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 class="font-bold text-slate-800 flex items-center space-x-2 text-base mb-4">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span>Objetivos del Simulador</span>
+                        </h3>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li class="flex items-start space-x-2">
+                                <span class="text-indigo-500 font-bold">•</span>
+                                <span>Comprender detalladamente la regulación génica mediada por <strong>SREBP/SCAP</strong> en la síntesis de colesterol.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <span class="text-indigo-500 font-bold">•</span>
+                                <span>Asociar fármacos comunes (Estatinas, Fibratos, Colestiramina, Ezetimiba) a sus respectivas dianas metabólicas correspondientes.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <span class="text-indigo-500 font-bold">•</span>
+                                <span>Diferenciar de manera integral el transporte, catabolismo e implicaciones en la formación del ateroma.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center space-x-2 text-base mb-2">
+                                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span>Instrucciones Clínicas</span>
+                            </h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                El simulador evaluará tus explicaciones de forma automatizada. En las preguntas de desarrollo, redacta tu respuesta con rigor científico y utiliza el botón "Analizar con Rúbrica de Evaluación" para verificar las palabras clave necesarias.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NIVEL 1: ALTA FRECUENCIA -->
+            <section id="section-nivel1" class="space-y-8 hidden">
+                <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-rose-500 font-bold text-xs uppercase tracking-wider">Nivel 1</span>
+                        <h2 class="text-xl font-bold text-slate-900">Alta Frecuencia - Desarrollo y Casos Clínicos</h2>
+                    </div>
+                    <span class="bg-rose-50 text-rose-600 text-xs font-bold px-3 py-1 rounded-full">Examen Oral / Parcial</span>
+                </div>
+
+                <!-- Pregunta 1: SREBP -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q1">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 1</span>
+                        <span class="text-xs text-slate-400" id="status-q1">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Caso Clínico: Síntesis de Colesterol y Regulación Génica (SREBP)</h3>
+                        <p class="text-sm text-slate-500 mt-1">Un paciente con hipercolesterolemia familiar presenta una mutación en los receptores de LDL.</p>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> Explica cómo el colesterol libre intracelular regula a largo plazo su propia síntesis y la captura de LDL exógena. Detalla el mecanismo de acción del factor de transcripción SREBP, su activación mediante la proteína SCAP y el papel del sitio SRE en el ADN.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q1')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q1" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Enfoca tu respuesta describiendo el comportamiento del hepatocito cuando hay deprivación de lípidos. La proteína SCAP actúa como el termómetro de colesterol en el Retículo Endoplasmático. Si el colesterol baja, escolta a SREBP al Aparato de Golgi en vesículas COPII para ser escindido por proteasas que liberan su dominio nuclear.
+                        </div>
+                    </div>
+
+                    <!-- Campo de respuesta -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Tu respuesta:</label>
+                        <textarea id="input-q1" rows="5" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" placeholder="Escribe aquí tu explicación detallada..."></textarea>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-wrap gap-2 justify-end">
+                        <button onclick="analyzeResponse('q1')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Analizar con Rúbrica
+                        </button>
+                    </div>
+
+                    <!-- Resultados de Rúbrica -->
+                    <div id="rubric-q1" class="hidden border-t border-slate-100 pt-4 space-y-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Checklist de Cátedra (Palabras Clave Identificadas):</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="keywords-container-q1">
+                            <!-- JS se encarga de rellenar -->
+                        </div>
+                        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs mt-3">
+                            <p class="font-bold text-indigo-900">Respuesta Oficial y Explicación:</p>
+                            <p class="text-slate-700 leading-relaxed mt-1">
+                                Cuando el colesterol intracelular disminuye, se activa su propia síntesis y captura. El sensor de colesterol es <strong>SCAP</strong> (proteína activadora de SREBP), localizada en el retículo endoplasmático. Al haber niveles bajos de colesterol, el complejo SCAP-SREBP es liberado de la proteína de retención <strong>INSIG</strong>, transportándose al <strong>Aparato de Golgi</strong> mediante vesículas COPII. Allí, proteasas específicas (S1P y S2P) cortan proteolíticamente a la proteína <strong>SREBP</strong>, liberando su dominio soluble de transcripción helicoidal. Este dominio migra al núcleo celular y se une a la secuencia de ADN denominada <strong>SRE</strong> (Sterol Regulatory Element / Elemento de Respuesta a Esteroles), lo que promueve la transcripción génica y síntesis de la enzima <strong>HMG-CoA Reductasa</strong> (aumentando la síntesis de novo) y de los <strong>Receptores de LDL</strong> (incrementando la captación de LDL exógena de la circulación sanguínea).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 2: Razonamiento de Fármacos -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q2">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 2</span>
+                        <span class="text-xs text-slate-400" id="status-q2">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Caso Clínico: Razonamiento de Fármacos</h3>
+                        <p class="text-sm text-slate-500 mt-1">Un paciente presenta un perfil lipídico alterado y se propone una politerapia.</p>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> Asocia las siguientes intervenciones con el fármaco utilizado y analiza su impacto metabólico regulador. Selecciona el fármaco correcto de las opciones indicadas para cada caso.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q2')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q2" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Las estatinas inhiben la síntesis endógena de novo. La interrupción de la circulación enterohepática se asocia a resinas que secuestran ácidos biliares, como la colestiramina. Los fibratos activan receptores nucleares PPAR-$\alpha$. La ezetimiba bloquea directamente el transportador NPC1L1 en el enterocito.
+                        </div>
+                    </div>
+
+                    <!-- Intervenciones Dinámicas -->
+                    <div class="space-y-4 pt-2">
+                        <!-- Intervención A -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                            <p class="text-xs font-extrabold text-indigo-700 uppercase">Intervención A</p>
+                            <p class="text-sm text-slate-700">
+                                Si el paciente recibe un fármaco que bloquea la síntesis hepática de novo de colesterol, ¿cómo responden los receptores de LDL en el hepatocito y qué efecto tiene sobre el colesterol circulante? Justifica mediante la regulación génica (SREBP).
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Fármaco utilizado:</label>
+                                <select id="dropdown-q2-a" class="border border-slate-300 rounded p-1.5 text-xs focus:ring-indigo-500 focus:ring-1 outline-none w-full sm:w-48 bg-white">
+                                    <option value="">--Seleccionar--</option>
+                                    <option value="Ezetimiba">Ezetimiba</option>
+                                    <option value="Fibratos">Fibratos</option>
+                                    <option value="Colestiramina">Colestiramina</option>
+                                    <option value="Estatinas">Estatinas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Intervención B -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                            <p class="text-xs font-extrabold text-indigo-700 uppercase">Intervención B</p>
+                            <p class="text-sm text-slate-700">
+                                Un tratamiento interrumpe la circulación enterohepática de ácidos biliares. ¿Por qué esto fuerza al hígado a "consumir" sus reservas de colesterol plasmático?
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Fármaco utilizado:</label>
+                                <select id="dropdown-q2-b" class="border border-slate-300 rounded p-1.5 text-xs focus:ring-indigo-500 focus:ring-1 outline-none w-full sm:w-48 bg-white">
+                                    <option value="">--Seleccionar--</option>
+                                    <option value="Ezetimiba">Ezetimiba</option>
+                                    <option value="Fibratos">Fibratos</option>
+                                    <option value="Colestiramina">Colestiramina</option>
+                                    <option value="Estatinas">Estatinas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Intervención C -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                            <p class="text-xs font-extrabold text-indigo-700 uppercase">Intervención C</p>
+                            <p class="text-sm text-slate-700">
+                                Si se prescribe un agonista de los receptores nucleares PPAR-alpha, ¿cómo se modifican los niveles de triglicéridos plasmáticos y la actividad de la enzima Lipoproteína Lipasa (LPL)?
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Fármaco utilizado:</label>
+                                <select id="dropdown-q2-c" class="border border-slate-300 rounded p-1.5 text-xs focus:ring-indigo-500 focus:ring-1 outline-none w-full sm:w-48 bg-white">
+                                    <option value="">--Seleccionar--</option>
+                                    <option value="Ezetimiba">Ezetimiba</option>
+                                    <option value="Fibratos">Fibratos</option>
+                                    <option value="Colestiramina">Colestiramina</option>
+                                    <option value="Estatinas">Estatinas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Intervención D -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                            <p class="text-xs font-extrabold text-indigo-700 uppercase">Intervención D</p>
+                            <p class="text-sm text-slate-700">
+                                El paciente consume un inhibidor selectivo de la proteína NPC1L1. ¿En qué sitio anatómico y sobre qué proceso de transporte específico está actuando?
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Fármaco utilizado:</label>
+                                <select id="dropdown-q2-d" class="border border-slate-300 rounded p-1.5 text-xs focus:ring-indigo-500 focus:ring-1 outline-none w-full sm:w-48 bg-white">
+                                    <option value="">--Seleccionar--</option>
+                                    <option value="Ezetimiba">Ezetimiba</option>
+                                    <option value="Fibratos">Fibratos</option>
+                                    <option value="Colestiramina">Colestiramina</option>
+                                    <option value="Estatinas">Estatinas</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción para evaluar -->
+                    <div class="flex justify-end">
+                        <button onclick="evaluateQ2()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Validar Farmacología
+                        </button>
+                    </div>
+
+                    <!-- Panel de Feedback -->
+                    <div id="feedback-q2" class="hidden p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-xs space-y-3">
+                        <h4 class="font-bold text-indigo-900 text-sm">Corrección e Impacto Bioquímico de las Intervenciones:</h4>
+                        
+                        <div class="space-y-3 text-slate-700 leading-relaxed">
+                            <div>
+                                <p class="font-bold text-slate-800">✅ Intervención A — Estatinas:</p>
+                                <p class="mt-0.5">Al bloquear competitivamente la HMG-CoA reductasa, cae el colesterol intracelular en el hepatocito. Esto estimula la vía génica mediada por SREBP y SCAP, aumentando la síntesis y expresión en superficie de los receptores de LDL. Estos receptores retiran las lipoproteínas circulantes disminuyendo la concentración plasmática de colesterol.</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-bold text-slate-800">✅ Intervención B — Colestiramina:</p>
+                                <p class="mt-0.5">La colestiramina es una resina de intercambio que se une a los ácidos biliares en la luz intestinal previniendo su reabsorción en el íleon terminal. Esto interrumpe la circulación enterohepática. Al perderse los ácidos por materia fecal, el hepatocito se ve forzado a consumir sus depósitos de colesterol endógeno para volver a sintetizar ácidos biliares catalizados por la enzima 7-$\alpha$-hidroxilasa.</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-bold text-slate-800">✅ Intervención C — Fibratos:</p>
+                                <p class="mt-0.5">Los fibratos activan al receptor nuclear de transcripción PPAR-$\alpha$. Esto incrementa la expresión y actividad de la Lipoproteína Lipasa (LPL) en los capilares del músculo y del tejido adiposo, disminuyendo notablemente los niveles de triglicéridos plasmáticos y aumentando simultáneamente las proteínas de transporte reverso (ApoAI).</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-bold text-slate-800">✅ Intervención D — Ezetimiba:</p>
+                                <p class="mt-0.5">La ezetimiba actúa de forma selectiva sobre el enterocito en el borde en cepillo del intestino delgado, bloqueando al transportador NPC1L1. Al inhibir este transportador de colesterol libre, disminuye directamente la absorción de colesterol de la dieta y de la bilis, disminuyendo el aporte lipídico que llega al hígado vía remanentes de quilomicrones.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 3: Aterosclerosis y Transporte Reverso -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 3</span>
+                        <span class="text-xs text-slate-400" id="status-q3">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Caso Clínico: Aterosclerosis y Transporte Reverso</h3>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna 1:</strong> Define el "transporte reverso del colesterol". Explica la función de la enzima LCAT (activada por apoAI) en la maduración de las HDL y cómo la CETP permite el intercambio de ésteres de colesterol por triglicéridos entre HDL y VLDL/LDL.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q3')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q3" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Explica cómo la apoA-I activa la LCAT plasmática para esterificar el colesterol y hacerlo hidrofóbico. En la aterosclerosis, enfoca tu razonamiento en la oxidación subendotelial de las LDL y en la fagocitosis descontrolada mediada por los receptores scavenger de los macrófagos.
+                        </div>
+                    </div>
+
+                    <!-- Campos de respuesta Q3 - Parte A -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Explicación de Transporte Reverso, LCAT y CETP:</label>
+                        <textarea id="input-q3-a" rows="4" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí..."></textarea>
+                    </div>
+
+                    <div class="pt-2">
+                        <p class="text-sm font-semibold text-slate-700 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna adicional:</strong> Explica bioquímicamente la génesis de la placa de ateroma: describe el proceso de oxidación de la LDL en el espacio subendotelial, la captación por receptores scavenger en macrófagos y el evento que desencadena la formación de células espumosas.
+                        </p>
+                    </div>
+
+                    <!-- Campos de respuesta Q3 - Parte B -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Explicación de la Placa de Ateroma y Células Espumosas:</label>
+                        <textarea id="input-q3-b" rows="4" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí..."></textarea>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex justify-end">
+                        <button onclick="analyzeResponse('q3')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Analizar con Rúbrica
+                        </button>
+                    </div>
+
+                    <!-- Resultados de Rúbrica -->
+                    <div id="rubric-q3" class="hidden border-t border-slate-100 pt-4 space-y-4">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Checklist de Cátedra (Palabras Clave Identificadas):</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="keywords-container-q3">
+                            <!-- JS se encarga de rellenar -->
+                        </div>
+                        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs mt-3 space-y-3">
+                            <div>
+                                <p class="font-bold text-indigo-900">Respuesta Oficial - Transporte Reverso:</p>
+                                <p class="text-slate-700 leading-relaxed mt-1">
+                                    El <strong>transporte reverso de colesterol</strong> es la remoción del exceso de colesterol libre desde los tejidos extrahepáticos y células de la pared arterial, transportándose de vuelta al hígado por medio de la <strong>HDL</strong> para su metabolismo y posterior excreción por vía biliar. La enzima plasmática <strong>LCAT</strong> (Lecitina-Colesterol Aciltransferasa) es activada por la apolipoproteína <strong>apoAI</strong> de la HDL; cataliza la transferencia de un grupo acilo desde la lecitina al colesterol libre, convirtiéndolo en éster de colesterol (altamente hidrofóbico). Al formarse, el éster de colesterol migra al interior de la HDL naciente, permitiendo su maduración a una partícula esférica grande. La proteína <strong>CETP</strong> (Proteína de Transferencia de Ésteres de Colesterol) interviene transfiriendo ésteres de colesterol de la HDL hacia las lipoproteínas de menor densidad (VLDL/LDL), a cambio de triglicéridos.
+                                </p>
+                            </div>
+                            <div class="border-t border-slate-200/50 pt-2">
+                                <p class="font-bold text-indigo-900">Respuesta Oficial - Génesis del Ateroma:</p>
+                                <p class="text-slate-700 leading-relaxed mt-1">
+                                    En la génesis del ateroma, el exceso de partículas de <strong>LDL</strong> circulante penetra la pared vascular celular y se acumula en el <strong>espacio subendotelial</strong>, donde sufren modificaciones químicas mediante especies reactivas de oxígeno, convirtiéndose en <strong>LDL oxidada</strong>. Esta forma anormal actúa como un potente inductor quimiotáctico, atrayendo monocitos que se diferencian en macrófagos. Los macrófagos expresan receptores "basurero" o <strong>scavenger</strong> (SR-A y CD36), los cuales fagocitan la LDL oxidada de forma masiva y descontrolada, ya que estos receptores no están sujetos a la regulación clásica por retroalimentación de colesterol intracelular. Como consecuencia de este influjo constante, los macrófagos acumulan enormes cantidades de gotas lipídicas en su citoplasma, convirtiéndose en <strong>células espumosas</strong> (foam cells), evento clave que gatilla la inflamación crónica y formación física de la placa de ateroma.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LEVEL 2: FRECUENCIA MEDIA -->
+            <section id="section-nivel2" class="space-y-8 hidden">
+                <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-amber-500 font-bold text-xs uppercase tracking-wider">Nivel 2</span>
+                        <h2 class="text-xl font-bold text-slate-900">Frecuencia Media - Destinos y Digestión</h2>
+                    </div>
+                    <span class="bg-amber-50 text-amber-600 text-xs font-bold px-3 py-1 rounded-full">Integración y Conceptos Clave</span>
+                </div>
+
+                <!-- Pregunta 4: Origen y Funciones Biológicas -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q4">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 4</span>
+                        <span class="text-xs text-slate-400" id="status-q4">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Origen y Funciones Biológicas</h3>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> ¿Cuál/es es/son las fuente/s de colesterol en el organismo? Describe la estructura química básica que define a la familia de los esteroides (ciclopentanoperhidrofenantreno) y nombra al menos tres familias de biomoléculas derivadas del colesterol indicando su función.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q4')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q4" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Recuerda el origen dual (colesterol exógeno vs síntesis endógena). La estructura consta de un esqueleto cíclico hidrocarburo de 17 carbonos dispuestos en cuatro anillos fusionados. Piensa en las hormonas suprarrenales y sexuales, en la síntesis biliar e inclusive en los precursores de vitaminas de la piel.
+                        </div>
+                    </div>
+
+                    <!-- Campo de respuesta -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Tu respuesta:</label>
+                        <textarea id="input-q4" rows="4" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí tu explicación..."></textarea>
+                    </div>
+
+                    <!-- Botón de acción -->
+                    <div class="flex justify-end">
+                        <button onclick="analyzeResponse('q4')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Analizar Respuesta
+                        </button>
+                    </div>
+
+                    <!-- Feedback de Rúbrica y Visual de Núcleo Esteroide -->
+                    <div id="rubric-q4" class="hidden border-t border-slate-100 pt-4 space-y-4">
+                        <div class="flex flex-col md:flex-row gap-4 items-center">
+                            <!-- Visual Ring SVG -->
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 w-full md:w-64 flex justify-center items-center flex-col">
+                                <span class="text-xs font-bold text-slate-500 mb-2">Esquema del Núcleo de Esteroides</span>
+                                <svg class="w-48 h-32 text-slate-700" viewBox="0 0 200 130" fill="none" stroke="currentColor" stroke-width="2">
+                                    <!-- Ring A -->
+                                    <polygon points="10,65 35,45 60,65 60,95 35,115 10,95" />
+                                    <!-- Ring B -->
+                                    <polygon points="60,65 85,45 110,65 110,95 85,115 60,95" />
+                                    <!-- Ring C -->
+                                    <polygon points="110,65 135,45 160,65 160,95 135,115 110,95" />
+                                    <!-- Ring D -->
+                                    <polygon points="160,65 185,55 198,80 180,100 160,95" />
+                                    <text x="30" y="85" fill="currentColor" stroke="none" font-size="14" font-weight="bold">A</text>
+                                    <text x="80" y="85" fill="currentColor" stroke="none" font-size="14" font-weight="bold">B</text>
+                                    <text x="130" y="85" fill="currentColor" stroke="none" font-size="14" font-weight="bold">C</text>
+                                    <text x="172" y="82" fill="currentColor" stroke="none" font-size="14" font-weight="bold">D</text>
+                                </svg>
+                                <span class="text-[10px] text-slate-400 mt-2">Ciclopentanoperhidrofenantreno</span>
+                            </div>
+
+                            <div class="flex-1 space-y-2">
+                                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Palabras Clave Identificadas:</p>
+                                <div class="grid grid-cols-2 gap-2" id="keywords-container-q4">
+                                    <!-- JS se encarga de rellenar -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs">
+                            <p class="font-bold text-indigo-900">Respuesta Oficial:</p>
+                            <p class="text-slate-700 leading-relaxed mt-1">
+                                Las fuentes de colesterol provienen de la vía <strong>endógena</strong> (síntesis de novo principalmente hepática a partir de Acetil-CoA) y la vía <strong>exógena</strong> (incorporado de la dieta de alimentos de origen animal). El esqueleto químico esteroide característico es el <strong>ciclopentanoperhidrofenantreno</strong>, que consiste en tres anillos ciclohexano condensados (anillos A, B, C) acoplados a un anillo ciclopentano terminal de 5 carbonos (anillo D). 
+                                <br><br>
+                                Las tres principales familias derivadas del colesterol son:
+                                <br>
+                                1. <strong>Ácidos y Sales Biliares:</strong> Como el ácido cólico o taurocólico, que actúan emulsionando los lípidos consumidos para permitir el ataque enzimático lipolítico digestivo.
+                                <br>
+                                2. <strong>Hormonas Esteroideas:</strong> Glucocorticoides (cortisol para la respuesta glucémica/estrés), mineralocorticoides (aldosterona para control salino renal) y hormonas sexuales (testosterona, progesterona, estradiol para el desarrollo gonadal).
+                                <br>
+                                3. <strong>Vitamina D (Calcitriol):</strong> Esencial para la absorción celular e intestinal del calcio plasmático e inmunidad metabólica.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 5: Transporte de Lípidos -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q5">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 5</span>
+                        <span class="text-xs text-slate-400" id="status-q5">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Transporte de Lípidos</h3>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> Realiza una comparación entre los quilomicrones y las VLDL en cuanto a origen (tejido), densidad, composición lipídica principal, apolipoproteína característica y destino final. ¿Qué es la apoCII y cómo la adquieren estas lipoproteínas?
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q5')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q5" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Los quilomicrones empacan grasa ingerida de origen exógeno (de la dieta), mientras que las VLDL distribuyen triglicéridos de origen endógeno (sintetizados en el hígado). Ambos requieren de la ApoCII (que es transferida por las HDL en la circulación plasmática) para activar a la enzima LPL y liberar ácidos grasos.
+                        </div>
+                    </div>
+
+                    <!-- Tabla Interactiva -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-slate-100">
+                                    <th class="p-2 border border-slate-200 font-bold">Criterio de Cátedra</th>
+                                    <th class="p-2 border border-slate-200 font-bold text-indigo-700">Quilomicrones</th>
+                                    <th class="p-2 border border-slate-200 font-bold text-rose-700">VLDL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-slate-200 font-semibold bg-slate-50/50">Origen (Tejido)</td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-qm-origen" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="Intestino">Intestino (Enterocitos)</option>
+                                            <option value="Hígado">Hígado (Hepatocitos)</option>
+                                        </select>
+                                    </td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-vldl-origen" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="Intestino">Intestino (Enterocitos)</option>
+                                            <option value="Hígado">Hígado (Hepatocitos)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-slate-200 font-semibold bg-slate-50/50">Lípido Mayoritario</td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-qm-lipid" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="TAG exógenos">Triglicéridos (TAG) exógenos</option>
+                                            <option value="TAG endógenos">Triglicéridos (TAG) endógenos</option>
+                                            <option value="Colesterol libre">Colesterol libre</option>
+                                        </select>
+                                    </td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-vldl-lipid" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="TAG exógenos">Triglicéridos (TAG) exógenos</option>
+                                            <option value="TAG endógenos">Triglicéridos (TAG) endógenos</option>
+                                            <option value="Colesterol libre">Colesterol libre</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-slate-200 font-semibold bg-slate-50/50">Apo Característica</td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-qm-apo" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="ApoB-48">ApoB-48</option>
+                                            <option value="ApoB-100">ApoB-100</option>
+                                        </select>
+                                    </td>
+                                    <td class="p-2 border border-slate-200">
+                                        <select id="q5-vldl-apo" class="w-full bg-white p-1 border border-slate-300 rounded">
+                                            <option value="">--Seleccionar--</option>
+                                            <option value="ApoB-48">ApoB-48</option>
+                                            <option value="ApoB-100">ApoB-100</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pregunta complementaria ApoCII -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">¿Qué es apoCII y cómo la adquieren estas lipoproteínas?</label>
+                        <textarea id="input-q5-text" rows="3" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí tu justificación sobre la ApoCII..."></textarea>
+                    </div>
+
+                    <!-- Botón de acción -->
+                    <div class="flex justify-end">
+                        <button onclick="evaluateQ5()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Validar Respuestas
+                        </button>
+                    </div>
+
+                    <!-- Panel de Feedback -->
+                    <div id="feedback-q5" class="hidden p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-xs space-y-3">
+                        <h4 class="font-bold text-indigo-900 text-sm">Corrección e Integración Comparativa de Lipoproteínas:</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-700 leading-relaxed">
+                            <div>
+                                <p class="font-bold text-slate-800">📊 Quilomicrones:</p>
+                                <ul class="list-disc list-inside mt-1 space-y-1">
+                                    <li><strong>Origen:</strong> Enterocitos del intestino delgado.</li>
+                                    <li><strong>Densidad:</strong> La menor densidad (&lt; 0.95 g/ml) debido a su enorme carga lipídica.</li>
+                                    <li><strong>Lípido Principal:</strong> Triglicéridos exógenos (de la dieta).</li>
+                                    <li><strong>Apolipoproteína estructural:</strong> ApoB-48.</li>
+                                    <li><strong>Destino final:</strong> Remanentes de quilomicrones, captados por el receptor apoE en el hígado.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">📊 VLDL:</p>
+                                <ul class="list-disc list-inside mt-1 space-y-1">
+                                    <li><strong>Origen:</strong> Hepatocitos del hígado.</li>
+                                    <li><strong>Densidad:</strong> Muy baja densidad (0.95 - 1.006 g/ml).</li>
+                                    <li><strong>Lípido Principal:</strong> Triglicéridos endógenos (síntesis hepática).</li>
+                                    <li><strong>Apolipoproteína estructural:</strong> ApoB-100.</li>
+                                    <li><strong>Destino final:</strong> Conversión metabólica progresiva en IDL y finalmente LDL plasmáticas.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-200/50 pt-2 text-slate-700 leading-relaxed">
+                            <p class="font-bold text-slate-800">🧬 Papel Molecular de la apoCII:</p>
+                            <p class="mt-0.5">
+                                La <strong>apoCII</strong> es una apolipoproteína activadora obligatoria de la enzima <strong>Lipoproteína Lipasa (LPL)</strong> en los capilares de tejidos periféricos. Las partículas de quilomicrones y VLDL nacientes carecen de esta proteína cuando salen de sus respectivos tejidos de origen. La adquieren temporalmente en la sangre por transferencia directa desde las partículas de <strong>HDL</strong>. Al perder la mayor parte de sus triglicéridos, la apoCII es devuelta a la HDL.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 6: Eliminación y Catabolismo -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q6">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 6</span>
+                        <span class="text-xs text-slate-400" id="status-q6">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Eliminación y Catabolismo</h3>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> Explica brevemente por qué no se puede obtener energía metabólica (ATP) de la molécula de colesterol. ¿Cómo se elimina del organismo? Describe su conversión en ácidos biliares y su excreción final.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q6')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q6" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> A diferencia de los ácidos grasos o carbohidratos, las células eucariotas animales no poseen sistemas enzimáticos capaces de clivar o metabolizar el anillo ciclopentanoperhidrofenantreno a dióxido de carbono y agua. La eliminación biliar es fundamental.
+                        </div>
+                    </div>
+
+                    <!-- Campo de respuesta -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Tu respuesta:</label>
+                        <textarea id="input-q6" rows="4" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí tu explicación..."></textarea>
+                    </div>
+
+                    <!-- Botón de acción -->
+                    <div class="flex justify-end">
+                        <button onclick="analyzeResponse('q6')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Analizar Catabolismo
+                        </button>
+                    </div>
+
+                    <!-- Resultados de Rúbrica -->
+                    <div id="rubric-q6" class="hidden border-t border-slate-100 pt-4 space-y-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Checklist de Cátedra (Palabras Clave Identificadas):</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="keywords-container-q6">
+                            <!-- JS se encarga de rellenar -->
+                        </div>
+                        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs">
+                            <p class="font-bold text-indigo-900">Respuesta Oficial y Mecanismo:</p>
+                            <p class="text-slate-700 leading-relaxed mt-1">
+                                No se puede obtener energía metabólica (ATP) del colesterol debido a que el organismo humano carece de las vías y enzimas catalíticas para romper los enlaces de carbono del núcleo cíclico del <strong>ciclopentanoperhidrofenantreno</strong> hasta degradarlo en $CO_2$ y agua. No existe un ciclo de oxidación del anillo de esteroides. 
+                                <br><br>
+                                La única forma de <strong>eliminar el colesterol</strong> del organismo es mediante su excreción hacia la bilis y su posterior expulsión fecal. Esto se realiza bajo dos modalidades en el hígado:
+                                <br>
+                                1) Conversión directa en <strong>ácidos biliares primarios</strong> (ácido cólico y quenodesoxicólico) iniciada por la enzima marcapasos 7-$\alpha$-hidroxilasa, conjugándose luego con taurina o glicina para aumentar su anfipatía.
+                                <br>
+                                2) Secreción directa de colesterol libre sin modificar disuelto en la bilis. Ambos se excretan hacia el duodeno, perdiéndose una pequeña fracción en las heces tras eludir la reabsorción enterohepática.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 7: Digestión Lipídica -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4" id="card-q7">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 7</span>
+                        <span class="text-xs text-slate-400" id="status-q7">Pendiente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Digestión Lipídica</h3>
+                        <p class="text-sm font-semibold text-slate-700 mt-2 bg-indigo-50/50 p-3 rounded border border-indigo-100/50">
+                            <strong>Consigna:</strong> La Colesterol Esterasa es una enzima crucial en la digestión lipídica. Explica dónde actúa, cuál es su sustrato y cómo se relaciona su función con la absorción de colesterol a nivel del enterocito.
+                        </p>
+                    </div>
+
+                    <!-- Botón Pista -->
+                    <div>
+                        <button onclick="toggleHint('q7')" class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            <span>Revelar Pista Académica</span>
+                        </button>
+                        <div id="hint-q7" class="hidden p-3 bg-amber-50 rounded-lg text-amber-800 text-xs mt-2 border border-amber-200">
+                            <strong>Pista Académica:</strong> Las grasas de origen animal contienen ésteres de colesterol de alta complejidad hidrofóbica que no pueden difundir directamente al enterocito. Recuerda la limitación estructural de los transportadores como el NPC1L1, que solo admiten colesterol libre.
+                        </div>
+                    </div>
+
+                    <!-- Campo de respuesta -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-slate-500">Tu respuesta:</label>
+                        <textarea id="input-q7" rows="4" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Escribe aquí tu explicación..."></textarea>
+                    </div>
+
+                    <!-- Botón de acción -->
+                    <div class="flex justify-end">
+                        <button onclick="analyzeResponse('q7')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Analizar Enzima
+                        </button>
+                    </div>
+
+                    <!-- Resultados de Rúbrica -->
+                    <div id="rubric-q7" class="hidden border-t border-slate-100 pt-4 space-y-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Checklist de Cátedra (Palabras Clave Identificadas):</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="keywords-container-q7">
+                            <!-- JS se encarga de rellenar -->
+                        </div>
+                        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs">
+                            <p class="font-bold text-indigo-900">Respuesta Oficial y Fundamento:</p>
+                            <p class="text-slate-700 leading-relaxed mt-1">
+                                La <strong>Colesterol Esterasa</strong> (o hidrolasa de ésteres de colesterol) es una enzima hidrolítica de origen pancreático que actúa en la <strong>luz del intestino delgado</strong> (duodeno/yeyuno). Su sustrato fisiológico son los <strong>ésteres de colesterol</strong> presentes en las grasas de la dieta animal. Cataliza la hidrólisis de estos ésteres, liberando como productos <strong>colesterol libre</strong> (no esterificado) y ácidos grasos libres.
+                                <br><br>
+                                Esta función es estrictamente esencial para la absorción de grasas porque el transportador proteico específico del enterocito, la proteína <strong>NPC1L1</strong>, solo reconoce y permite el paso de colesterol libre de las micelas mixtas hacia el citoplasma de la célula intestinal. Sin la acción previa de la colesterol esterasa, los ésteres permanecerían en el lumen digestivo y serían excretados en su totalidad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LEVEL 3: FRECUENCIA BAJA -->
+            <section id="section-nivel3" class="space-y-8 hidden">
+                <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-emerald-500 font-bold text-xs uppercase tracking-wider">Nivel 3</span>
+                        <h2 class="text-xl font-bold text-slate-900">Frecuencia Baja / Conceptos Rápidos</h2>
+                    </div>
+                    <span class="bg-emerald-50 text-emerald-600 text-xs font-bold px-3 py-1 rounded-full">Preguntas de Choice y V/F</span>
+                </div>
+
+                <!-- Pregunta 8: Verdadero o Falso con Justificación -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6" id="card-q8">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-2">
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 8</span>
+                        <span class="text-xs text-slate-400" id="status-q8">Pendiente</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Preguntas de Verdadero o Falso (con justificación):</h3>
+                        <p class="text-xs text-slate-500">Haz clic en Verdadero o Falso para cada enunciado. Si marcas "Falso", se desplegará el cuadro correspondiente para que escribas la justificación del error conceptual de cátedra.</p>
+                        
+                        <!-- Enunciado 1 -->
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <p class="text-sm text-slate-700">
+                                <strong>Enunciado 1:</strong> "La enzima HMG-CoA reductasa es la enzima marcapasos de la síntesis de colesterol y es activada por el glucagón".
+                            </p>
+                            <div class="flex space-x-2">
+                                <button onclick="selectVF(1, true)" id="btn-q8-1-v" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Verdadero</button>
+                                <button onclick="selectVF(1, false)" id="btn-q8-1-f" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Falso</button>
+                            </div>
+                            <div id="just-box-1" class="hidden space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Justificación del error:</label>
+                                <textarea id="just-text-1" rows="2" class="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Escribe por qué es falso..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Enunciado 2 -->
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <p class="text-sm text-slate-700">
+                                <strong>Enunciado 2:</strong> "La LPL hidroliza ésteres de colesterol en el interior del hepatocito".
+                            </p>
+                            <div class="flex space-x-2">
+                                <button onclick="selectVF(2, true)" id="btn-q8-2-v" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Verdadero</button>
+                                <button onclick="selectVF(2, false)" id="btn-q8-2-f" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Falso</button>
+                            </div>
+                            <div id="just-box-2" class="hidden space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Justificación del error:</label>
+                                <textarea id="just-text-2" rows="2" class="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Escribe por qué es falso..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Enunciado 3 -->
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <p class="text-sm text-slate-700">
+                                <strong>Enunciado 3:</strong> "En la saciedad, la síntesis endógena de colesterol hepático está inhibida porque hay un alto influjo de colesterol dietario a través de los quilomicrones".
+                            </p>
+                            <div class="flex space-x-2">
+                                <button onclick="selectVF(3, true)" id="btn-q8-3-v" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Verdadero</button>
+                                <button onclick="selectVF(3, false)" id="btn-q8-3-f" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Falso</button>
+                            </div>
+                            <div id="just-box-3" class="hidden space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Justificación del error:</label>
+                                <textarea id="just-text-3" rows="2" class="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Escribe por qué es falso..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Enunciado 4 -->
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <p class="text-sm text-slate-700">
+                                <strong>Enunciado 4:</strong> "Un mecanismo para disminuir la concentración de colesterol en el organismo consiste en la utilización de estatinas que actúan directamente sobre la enzima HMG-CoA sintasa".
+                            </p>
+                            <div class="flex space-x-2">
+                                <button onclick="selectVF(4, true)" id="btn-q8-4-v" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Verdadero</button>
+                                <button onclick="selectVF(4, false)" id="btn-q8-4-f" class="px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700">Falso</button>
+                            </div>
+                            <div id="just-box-4" class="hidden space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Justificación del error:</label>
+                                <textarea id="just-text-4" rows="2" class="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Escribe por qué es falso..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción para evaluar -->
+                    <div class="flex justify-end">
+                        <button onclick="evaluateQ8()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Validar Verdadero/Falso
+                        </button>
+                    </div>
+
+                    <!-- Retroalimentación oficial V/F -->
+                    <div id="feedback-q8" class="hidden p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-xs space-y-3">
+                        <h4 class="font-bold text-indigo-900 text-sm">Corrección Oficial de Enunciados:</h4>
+                        <p class="text-rose-600 font-bold">¡Los 4 enunciados del examen son FALSOS! Aquí tienes las justificaciones precisas de cátedra:</p>
+                        
+                        <div class="space-y-2.5 text-slate-700 leading-relaxed">
+                            <p><strong>❌ Enunciado 1 — Falso.</strong> La enzima reguladora marcapasos HMG-CoA reductasa es <strong>inhibida por el glucagón</strong> (vía cascada de fosforilación por PKA en estados de ayuno) y es <strong>activada por la insulina</strong> (vía activación de fosfatasas que desfosforilan la enzima en estado postprandial/saciedad).</p>
+                            <p><strong>❌ Enunciado 2 — Falso.</strong> La Lipoproteína Lipasa (LPL) no actúa en el interior del hepatocito. Su función es <strong>hidrolizar triglicéridos</strong> en la superficie endotelial de los <strong>capilares de tejidos periféricos extrahepáticos</strong> (principalmente músculo esquelético, cardíaco y tejido adiposo) para permitir el ingreso tisular de ácidos grasos.</p>
+                            <p><strong>❌ Enunciado 3 — Falso.</strong> En la saciedad, la síntesis endógena hepática de colesterol está <strong>activada</strong> por la insulina elevada que desfosforila a la HMG-CoA reductasa para permitir la síntesis de novo. El influjo de colesterol de la dieta no inhibe por completo la ruta hepática de síntesis endógena activa en este periodo.</p>
+                            <p><strong>❌ Enunciado 4 — Falso.</strong> Las estatinas disminuyen la concentración lipídica de colesterol actuando como inhibidores competitivos selectivos de la enzima <strong>HMG-CoA reductasa</strong>, no sobre la HMG-CoA sintasa.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 9: Preguntas de Opción Múltiple -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6" id="card-q9">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-2">
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded">PREGUNTA 9</span>
+                        <span class="text-xs text-slate-400" id="status-q9">Pendiente</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h3 class="font-bold text-slate-800 text-base">Preguntas de Opción Múltiple (Choice):</h3>
+                        
+                        <!-- Choice A -->
+                        <div class="space-y-3">
+                            <p class="text-sm font-semibold text-slate-700">
+                                1. ¿Cuál es la principal vía metabólica activa que contribuye a la síntesis de colesterol?
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-1" value="A" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>A) La vía de la beta-oxidación.</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-1" value="B" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>B) La vía de las pentosas fosfato (fuente de NADPH).</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-1" value="C" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>C) El ciclo de Krebs.</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-1" value="D" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>D) La glucogenólisis.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Choice B -->
+                        <div class="space-y-3">
+                            <p class="text-sm font-semibold text-slate-700">
+                                2. La apoCII es una apolipoproteína esencial que las partículas de quilomicrones y VLDL adquieren en la sangre por transferencia desde las:
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-2" value="A" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>A) LDL</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-2" value="B" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>B) IDL</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-2" value="C" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>C) HDL</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer hover:bg-slate-100">
+                                    <input type="radio" name="choice-9-2" value="D" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span>D) Albúmina</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción para evaluar -->
+                    <div class="flex justify-end">
+                        <button onclick="evaluateQ9()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all">
+                            Validar Opción Múltiple
+                        </button>
+                    </div>
+
+                    <!-- Retroalimentación explicativa detallada de todas las alternativas -->
+                    <div id="feedback-q9" class="hidden p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-xs space-y-4">
+                        <div>
+                            <h4 class="font-bold text-indigo-900 text-sm">Análisis de Alternativas de la Pregunta 1:</h4>
+                            <p class="font-semibold text-emerald-700 mt-1">✓ Respuesta Correcta: B (Vía de las Pentosas Fosfato)</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1.5 text-slate-700 leading-relaxed">
+                                <li><strong>A) Incorrecta:</strong> La beta-oxidación es la vía encargada de degradar ácidos grasos en la matriz mitocondrial para producir acetil-CoA, NADH y $FADH_2$ en situaciones de ayuno, no contribuyendo directamente con cofactores biosintéticos en el citosol.</li>
+                                <li><strong>B) Correcta:</strong> La vía de las pentosas fosfato es la principal fuente citosólica de <strong>NADPH</strong>, cofactor imprescindible para las reducciones metabólicas sucesivas catalizadas por la enzima marcapasos HMG-CoA reductasa.</li>
+                                <li><strong>C) Incorrecta:</strong> El ciclo de Krebs oxida grupos acetilo en la mitocondria para producir intermediarios y cofactores reductores destinados a la cadena respiratoria para obtener ATP, sin proveer NADPH citosólico de forma neta.</li>
+                                <li><strong>D) Incorrecta:</strong> La glucogenólisis es puramente la vía catabólica de degradación del glucógeno para liberar glucosa-1-fosfato en estados de ayuno, sin relación metabólica directa con la biosíntesis reductiva de esteroides.</li>
+                            </ul>
+                        </div>
+
+                        <div class="border-t border-slate-200/50 pt-3">
+                            <h4 class="font-bold text-indigo-900 text-sm">Análisis de Alternativas de la Pregunta 2:</h4>
+                            <p class="font-semibold text-emerald-700 mt-1">✓ Respuesta Correcta: C (HDL)</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1.5 text-slate-700 leading-relaxed">
+                                <li><strong>A) Incorrecta:</strong> Las LDL son remanentes finales del aclaramiento metabólico de las VLDL; han perdido la apoCII y apoE, transportando exclusivamente apoB-100 hacia tejidos extrahepáticos y no actúan como donantes de apoproteínas.</li>
+                                <li><strong>B) Incorrecta:</strong> Las IDL son intermediarios densos efímeros formados durante la lipólisis periférica de las VLDL, no actúan como reservorio dinámico del plasma.</li>
+                                <li><strong>C) Correcta:</strong> Las <strong>HDL</strong> actúan en la circulación plasmática como el verdadero "reservorio de apoproteínas", transfiriendo activamente la <strong>apoCII</strong> y la apoE a los quilomicrones y VLDL nacientes para su correcta maduración bioquímica en sangre.</li>
+                                <li><strong>D) Incorrecta:</strong> La albúmina es la proteína sérica principal del transporte plasmático de ácidos grasos libres de cadena larga no esterificados y hormonas lipofílicas sencillas, pero no participa en el transporte ni la cesión de apoproteínas lipoproteicas complejas.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="bg-indigo-950 text-indigo-300 py-6 border-t border-indigo-900">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
+            <p><strong>Plataforma didáctica para estudiantes de medicina - Colesterol y Regulación Génica.</strong></p>
+            <p class="text-indigo-400">Todos los datos de examen y casos clínicos adaptados rigurosamente de las guías docentes universitarias oficiales.</p>
+        </div>
+    </footer>
+
+    <!-- Lógica de Control de la Aplicación -->
+    <script>
+        // Gestión de Estado de la Aplicación
+        const state = {
+            activeTab: 'dashboard',
+            progress: {
+                q1: false,
+                q2: false,
+                q3: false,
+                q4: false,
+                q5: false,
+                q6: false,
+                q7: false,
+                q8: false,
+                q9: false
+            },
+            vfAnswers: {
+                1: null,
+                2: null,
+                3: null,
+                4: null
+            }
+        };
+
+        // Diccionarios de palabras clave para verificar las respuestas discursivas en tiempo real
+        const keywords = {
+            q1: [
+                { id: 'srebp', label: 'SREBP', match: /srebp/i },
+                { id: 'scap', label: 'SCAP', match: /scap/i },
+                { id: 'golgi', label: 'Aparato de Golgi', match: /golgi/i },
+                { id: 'reticulo', label: 'Retículo Endoplasmático', match: /(reticulo|endoplas|re)/i },
+                { id: 'insig', label: 'INSIG', match: /insig/i },
+                { id: 'clivaje', label: 'Proteólisis/Clivaje', match: /(clivaje|corte|proteas|escis)/i },
+                { id: 'sre', label: 'Sitio SRE', match: /sre/i },
+                { id: 'hmg', label: 'HMG-CoA Reductasa', match: /(hmg|reductasa)/i },
+                { id: 'rldl', label: 'Receptor de LDL', match: /(receptor|ldl|rldl)/i }
+            ],
+            q3: [
+                { id: 'lcat', label: 'Enzima LCAT', match: /lcat/i },
+                { id: 'apoai', label: 'ApoA-I', match: /(apoai|apo a|apoa-1)/i },
+                { id: 'ester', label: 'Esterificación', match: /(ester|hidrofo|nucleo)/i },
+                { id: 'cetp', label: 'Proteína CETP', match: /cetp/i },
+                { id: 'ateroma', label: 'Génesis del Ateroma', match: /(ateroma|oxida|scavenger|espumos)/i }
+            ],
+            q4: [
+                { id: 'endogeno', label: 'Vía Endógena (Hígado)', match: /(endogen|novo|higado|acetil)/i },
+                { id: 'exogeno', label: 'Vía Exógena (Dieta)', match: /(exogen|dieta|alimento)/i },
+                { id: 'ciclo', label: 'Ciclopentanoperhidrofenantreno', match: /(ciclopent|fenantreno|anillos|esteroide)/i },
+                { id: 'sales', label: 'Sales/Ácidos Biliares', match: /(sales|acido|bilia)/i },
+                { id: 'hormonas', label: 'Hormonas Esteroideas', match: /(hormon|cortis|aldost|testost|estrog)/i },
+                { id: 'vitd', label: 'Vitamina D', match: /(vitamina d|calcitriol)/i }
+            ],
+            q6: [
+                { id: 'atp', label: 'Sin degradación (Sin ATP)', match: /(no rinde|no se puede|carece|no se degrad|atp)/i },
+                { id: 'ciclopentano', label: 'Anillo de Ciclopentanoperhidrofenantreno', match: /(ciclopent|fenantreno|anillo)/i },
+                { id: 'bilis', label: 'Excreción biliar y heces', match: /(bilis|heces|excre)/i },
+                { id: 'acidos', label: 'Conversión a Ácidos Biliares', match: /(acido|biliar|sales)/i }
+            ],
+            q7: [
+                { id: 'luz', label: 'Luz Intestinal/Duodeno', match: /(luz|intestino|duodeno|pancrea)/i },
+                { id: 'sustrato', label: 'Sustrato: Ésteres de colesterol', match: /(ester|colesterol ester)/i },
+                { id: 'libre', label: 'Colesterol libre para NPC1L1', match: /(libre|npc1|absor)/i }
+            ]
+        };
+
+        // Navegación entre pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.className = "w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors hover:bg-slate-50 text-slate-700";
+            });
+            document.getElementById('btn-tab-dashboard').className = "w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors hover:bg-slate-50 text-slate-700";
+            
+            const activeBtn = document.getElementById(`btn-tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "w-full flex items-center justify-between p-3 rounded-lg text-left text-sm font-medium transition-colors bg-indigo-50 text-indigo-700";
+            }
+
+            document.getElementById('section-dashboard').classList.add('hidden');
+            document.getElementById('section-nivel1').classList.add('hidden');
+            document.getElementById('section-nivel2').classList.add('hidden');
+            document.getElementById('section-nivel3').classList.add('hidden');
+
+            document.getElementById(`section-${tabId}`).classList.remove('hidden');
+            state.activeTab = tabId;
+        }
+
+        // Mostrar/Ocultar caja de pistas
+        function toggleHint(questionId) {
+            const hintBox = document.getElementById(`hint-${questionId}`);
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+            } else {
+                hintBox.classList.add('hidden');
+            }
+        }
+
+        // Análisis de las respuestas discursivas
+        function analyzeResponse(questionId) {
+            let userText = "";
+            let requiredKeywords = keywords[questionId] || [];
+
+            if (questionId === 'q1') {
+                userText = document.getElementById('input-q1').value;
+            } else if (questionId === 'q3') {
+                userText = document.getElementById('input-q3-a').value + " " + document.getElementById('input-q3-b').value;
+            } else if (questionId === 'q4') {
+                userText = document.getElementById('input-q4').value;
+            } else if (questionId === 'q6') {
+                userText = document.getElementById('input-q6').value;
+            } else if (questionId === 'q7') {
+                userText = document.getElementById('input-q7').value;
+            }
+
+            if (!userText.trim()) {
+                showToast("Por favor redacta tu respuesta antes de realizar la validación.");
+                return;
+            }
+
+            // Limpiar coincidencias previas de la rúbrica
+            const container = document.getElementById(`keywords-container-${questionId}`);
+            container.innerHTML = "";
+
+            let matchCount = 0;
+            requiredKeywords.forEach(kw => {
+                const matched = kw.match.test(userText);
+                if (matched) matchCount++;
+
+                const pill = document.createElement('div');
+                pill.className = `flex items-center space-x-2 p-2 rounded-lg border ${
+                    matched 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                }`;
+                pill.innerHTML = `
+                    <svg class="w-4 h-4 shrink-0 ${matched ? 'text-emerald-500' : 'text-slate-300'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="${matched ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}" />
+                    </svg>
+                    <span class="text-[11px] font-medium leading-none">${kw.label}</span>
+                `;
+                container.appendChild(pill);
+            });
+
+            // Marcar pregunta como resuelta
+            state.progress[questionId] = true;
+            document.getElementById(`status-${questionId}`).innerText = "Revisado";
+            document.getElementById(`status-${questionId}`).className = "text-xs font-bold text-emerald-600";
+            document.getElementById(`card-${questionId}`).classList.add('border-emerald-200');
+
+            // Mostrar rúbrica de evaluación y feedback oficial
+            document.getElementById(`rubric-${questionId}`).classList.remove('hidden');
+
+            updateOverallProgress();
+            showToast("Análisis molecular completado con éxito.");
+        }
+
+        // Validación de la pregunta 2 (Fármacos)
+        function evaluateQ2() {
+            const valA = document.getElementById('dropdown-q2-a').value;
+            const valB = document.getElementById('dropdown-q2-b').value;
+            const valC = document.getElementById('dropdown-q2-c').value;
+            const valD = document.getElementById('dropdown-q2-d').value;
+
+            if (!valA || !valB || !valC || !valD) {
+                showToast("Por favor, asocia todos los fármacos antes de validar.");
+                return;
+            }
+
+            let corrects = 0;
+            if (valA === 'Estatinas') corrects++;
+            if (valB === 'Colestiramina') corrects++;
+            if (valC === 'Fibratos') corrects++;
+            if (valD === 'Ezetimiba') corrects++;
+
+            state.progress.q2 = true;
+            document.getElementById('status-q2').innerText = corrects === 4 ? "Correcto" : "Revisado";
+            document.getElementById('status-q2').className = "text-xs font-bold text-emerald-600";
+            document.getElementById('card-q2').classList.add('border-emerald-200');
+
+            document.getElementById('feedback-q2').classList.remove('hidden');
+
+            updateOverallProgress();
+            showToast(`Asociación evaluada. Acertaste ${corrects} de 4 fármacos.`);
+        }
+
+        // Validación de la pregunta 5 (Tabla QM vs VLDL)
+        function evaluateQ5() {
+            const qmOrig = document.getElementById('q5-qm-origen').value;
+            const vldlOrig = document.getElementById('q5-vldl-origen').value;
+            const qmLipid = document.getElementById('q5-qm-lipid').value;
+            const vldlLipid = document.getElementById('q5-vldl-lipid').value;
+            const qmApo = document.getElementById('q5-qm-apo').value;
+            const vldlApo = document.getElementById('q5-vldl-apo').value;
+            const apoText = document.getElementById('input-q5-text').value;
+
+            if (!qmOrig || !vldlOrig || !qmLipid || !vldlLipid || !qmApo || !vldlApo || !apoText.trim()) {
+                showToast("Completa toda la tabla comparativa y la explicación de la apoCII antes de validar.");
+                return;
+            }
+
+            state.progress.q5 = true;
+            document.getElementById('status-q5').innerText = "Revisado";
+            document.getElementById('status-q5').className = "text-xs font-bold text-emerald-600";
+            document.getElementById('card-q5').classList.add('border-emerald-200');
+
+            document.getElementById('feedback-q5').classList.remove('hidden');
+
+            updateOverallProgress();
+            showToast("Tabla comparativa y papel de la apoCII evaluados.");
+        }
+
+        // Manejo de la selección de enunciados V/F
+        function selectVF(enunciadoId, val) {
+            state.vfAnswers[enunciadoId] = val;
+            
+            const btnV = document.getElementById(`btn-q8-${enunciadoId}-v`);
+            const btnF = document.getElementById(`btn-q8-${enunciadoId}-f`);
+
+            if (val) {
+                btnV.className = "px-3 py-1.5 rounded border border-indigo-500 bg-indigo-500 text-white text-xs font-bold transition-all";
+                btnF.className = "px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700";
+                document.getElementById(`just-box-${enunciadoId}`).classList.add('hidden');
+            } else {
+                btnV.className = "px-3 py-1.5 rounded border border-slate-300 text-xs font-bold transition-all hover:bg-slate-100 bg-white text-slate-700";
+                btnF.className = "px-3 py-1.5 rounded border border-rose-500 bg-rose-500 text-white text-xs font-bold transition-all";
+                document.getElementById(`just-box-${enunciadoId}`).classList.remove('hidden');
+            }
+        }
+
+        // Validación de respuestas de Verdadero o Falso
+        function evaluateQ8() {
+            if (state.vfAnswers[1] === null || state.vfAnswers[2] === null || state.vfAnswers[3] === null || state.vfAnswers[4] === null) {
+                showToast("Por favor, marca Verdadero o Falso para cada uno de los 4 enunciados.");
+                return;
+            }
+
+            for(let i=1; i<=4; i++) {
+                if (state.vfAnswers[i] === false) {
+                    const txt = document.getElementById(`just-text-${i}`).value;
+                    if (!txt.trim()) {
+                        showToast(`Por favor, redacta una breve justificación conceptual para el Enunciado ${i}.`);
+                        return;
+                    }
+                }
+            }
+
+            state.progress.q8 = true;
+            document.getElementById('status-q8').innerText = "Correcto";
+            document.getElementById('status-q8').className = "text-xs font-bold text-emerald-600";
+            document.getElementById('card-q8').classList.add('border-emerald-200');
+
+            document.getElementById('feedback-q8').classList.remove('hidden');
+
+            updateOverallProgress();
+            showToast("Enunciados evaluados. ¡Todos los enunciados de examen eran FALSOS!");
+        }
+
+        // Validación de las preguntas de opción múltiple (Choice)
+        function evaluateQ9() {
+            const ch1 = document.querySelector('input[name="choice-9-1"]:checked');
+            const ch2 = document.querySelector('input[name="choice-9-2"]:checked');
+
+            if (!ch1 || !ch2) {
+                showToast("Selecciona una opción para ambas preguntas de opción múltiple.");
+                return;
+            }
+
+            state.progress.q9 = true;
+            document.getElementById('status-q9').innerText = "Correcto";
+            document.getElementById('status-q9').className = "text-xs font-bold text-emerald-600";
+            document.getElementById('card-q9').classList.add('border-emerald-200');
+
+            document.getElementById('feedback-q9').classList.remove('hidden');
+
+            updateOverallProgress();
+            showToast("Opción múltiple validada con éxito.");
+        }
+
+        // Actualización general de counters y progreso
+        function updateOverallProgress() {
+            let total = 9;
+            let resolved = 0;
+            for (let k in state.progress) {
+                if (state.progress[k]) resolved++;
+            }
+
+            const percentage = Math.round((resolved / total) * 100);
+            document.getElementById('top-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('top-progress-text').innerText = `${resolved}/${total} Resueltas`;
+
+            const group1 = (state.progress.q1 ? 1 : 0) + (state.progress.q2 ? 1 : 0) + (state.progress.q3 ? 1 : 0);
+            const group2 = (state.progress.q4 ? 1 : 0) + (state.progress.q5 ? 1 : 0) + (state.progress.q6 ? 1 : 0) + (state.progress.q7 ? 1 : 0);
+            const group3 = (state.progress.q8 ? 1 : 0) + (state.progress.q9 ? 1 : 0);
+
+            document.getElementById('count-nivel1').innerText = `${group1}/3`;
+            document.getElementById('count-nivel2').innerText = `${group2}/4`;
+            document.getElementById('count-nivel3').innerText = `${group3}/2`;
+        }
+
+        // Toast de notificaciones emergentes
+        function showToast(message) {
+            const prev = document.getElementById('custom-toast');
+            if (prev) prev.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border border-slate-700/50 flex items-center space-x-3 transition-opacity duration-300 z-50";
+            toast.innerHTML = `
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Renderizado KaTeX seguro al completarse la carga de la página
+        window.onload = function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ]
+                });
+            }
+        };
+    </script>
+</body>
+</html>
