@@ -1,6 +1,0 @@
-{
-  "name": "Evaluación Médica de Bioquímica y Fisiología",
-  "description": "Plataforma interactiva de evaluación interactiva de bioquímica y metabolismo con explicaciones detalladas y panel de control docente.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
