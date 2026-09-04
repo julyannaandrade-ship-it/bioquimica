@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banco de Preguntas High Yield - Bioquímica II</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- ENCABEZADO MINIMALISTA Y MARCA SOLICITADA -->
+  <header class="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <span class="text-xs font-semibold tracking-wider uppercase text-sky-700 bg-sky-50 px-2.5 py-1 rounded border border-sky-200">
+          Evaluación • Medicina
+        </span>
+        <h1 class="text-lg font-bold text-slate-900 mt-1">Bioquímica II: Glúcidos, Lípidos e Integración</h1>
+      </div>
+      <!-- TEXTO OBLIGATORIO EN UN COSTADO -->
+      <div class="text-right">
+        <p class="text-xs font-bold tracking-tight text-slate-700">COVALENTES</p>
+        <p class="text-[11px] text-slate-500 font-medium">curso de bioquimica para medicina</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
+    
+    <!-- BARRA DE CONTROLES: FILTROS Y MODO -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-medium text-slate-500 mr-1">Filtrar por eje:</span>
+        <button onclick="setFilter('all')" id="btn-filter-all" class="filter-btn text-xs px-3 py-1.5 rounded-lg font-semibold bg-slate-900 text-white transition">Todos (50)</button>
+        <button onclick="setFilter('glucidos')" id="btn-filter-glucidos" class="filter-btn text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Glúcidos (17)</button>
+        <button onclick="setFilter('lipidos')" id="btn-filter-lipidos" class="filter-btn text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Lípidos (17)</button>
+        <button onclick="setFilter('integracion')" id="btn-filter-integracion" class="filter-btn text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Integración (16)</button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-slate-600 font-medium">
+          Progreso: <span id="answered-count" class="font-bold text-sky-700">0</span>/50
+        </div>
+        <button onclick="openResetModal()" class="text-xs text-slate-500 hover:text-red-600 underline font-medium ml-2">Reiniciar</button>
+      </div>
+    </div>
+
+    <!-- NAVEGADOR RÁPIDO DE PREGUNTAS (CUADRÍCULA NUMÉRICA) -->
+    <div class="bg-white p-3 rounded-xl border border-slate-200 mb-6 shadow-sm">
+      <div class="text-xs font-semibold text-slate-500 mb-2 flex justify-between">
+        <span>Índice de Preguntas</span>
+        <span class="text-[11px] text-slate-400">Verde: Correcta | Rojo: Incorrecta</span>
+      </div>
+      <div id="grid-container" class="grid grid-cols-10 sm:grid-cols-25 gap-1 text-center max-h-24 overflow-y-auto custom-scrollbar p-1">
+        <!-- Render dinámico de botones 1..50 -->
+      </div>
+    </div>
+
+    <!-- LISTA DE PREGUNTAS -->
+    <div id="questions-container" class="space-y-6">
+      <!-- Se inyectan las 50 preguntas aquí -->
+    </div>
+
+  </main>
+
+  <!-- MODAL DE CONFIRMACIÓN PERSONALIZADO PARA REINICIAR (SIN CONFIRM NATIVO) -->
+  <div id="reset-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 border border-slate-200 text-center transform transition-all">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 mb-1">¿Reiniciar evaluación?</h3>
+      <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+        Se borrarán todas tus respuestas registradas y la cuadrícula volverá a su estado inicial.
+      </p>
+      <div class="flex gap-2 justify-center">
+        <button onclick="closeResetModal()" class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+          Cancelar
+        </button>
+        <button onclick="confirmReset()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition shadow-sm">
+          Sí, reiniciar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="border-t border-slate-200 bg-white py-4 mt-8 text-center text-xs text-slate-500">
+    <span class="font-semibold text-slate-700">COVALENTES - curso de bioquimica para medicina</span> • Material formativo para exámenes parciales y finales de Medicina
+  </footer>
+
+  <script>
+    // 50 PREGUNTAS HIGH-YIELD CHOICE
+    const questions = [
+      // --- GLÚCIDOS (1 a 17) ---
+      {
+        id: 1,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Un lactante presenta hepatomegalia marcada, hipoglucemia severa de ayuno corto (3-4 horas), hiperlactacidemia e hiperuricemia. Se sospecha enfermedad de Von Gierke (Glucogenosis tipo Ia). ¿Cuál es la enzima deficiente responsable de este cuadro?",
+        options: [
+          "Glucógeno fosforilasa hepática",
+          "Glucosa-6-fosfatasa",
+          "Fructosa-1,6-bisfosfatasa",
+          "Fosfoenolpiruvato carboxiquinasa (PEPCK)"
+        ],
+        correct: 1,
+        rationale: "La glucosa-6-fosfatasa desfosforila la G-6-P en el retículo endoplasmático para liberar glucosa a sangre, siendo el paso final común tanto de la glucogenólisis como de la gluconeogénesis hepática. Su ausencia bloquea ambas rutas, atrapa ésteres fosfato en el hígado y desvía la G-6-P a glucólisis con acumulación de lactato."
+      },
+      {
+        id: 2,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿Por qué un paciente con deficiencia de glucosa-6-fosfatasa presenta elevación marcada del ácido láctico en sangre durante el ayuno?",
+        options: [
+          "Porque el lactato no puede ser convertido en piruvato por la enzima LDH.",
+          "Porque la acumulación citosólica de glucosa-6-fosfato se desvía masivamente hacia la glucólisis anaerobia hepática.",
+          "Porque el glucagón inhibe la piruvato carboxilasa mitocondrial.",
+          "Porque hay una degradación acelerada de ácidos grasos que genera cuerpos cetónicos e inhibe el ciclo de Krebs."
+        ],
+        correct: 1,
+        rationale: "Al no poder transformarse en glucosa libre, la G-6-P acumulada fluye hacia la glucólisis. El exceso de piruvato producido supera la capacidad oxidativa mitocondrial y se reduce a lactato por acción de la LDH para regenerar NAD+, causando acidosis metabólica láctica."
+      },
+      {
+        id: 3,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "En un paciente con sospecha de deficiencia de fructosa-1,6-bisfosfatasa hepática, ¿qué resultado se esperará observar tras la administración de glucagón dos horas después de una comida completa comparado con un ayuno de 15 horas?",
+        options: [
+          "La glucemia subirá a las 2 horas postprandiales, pero no responderá tras 15 horas de ayuno.",
+          "No habrá aumento de glucemia en ninguna de las dos situaciones.",
+          "La glucemia subirá únicamente a las 15 horas de ayuno gracias a la alanina muscular.",
+          "Habrá hipoglucemia inmediata a las 2 horas y normoglucemia en ayuno prolongado."
+        ],
+        correct: 0,
+        rationale: "A las 2 horas postprandiales las reservas de glucógeno hepático están repletas y la vía de la glucogenólisis está intacta (el glucagón activa la fosforilasa). A las 15 horas el glucógeno se agotó y se requiere obligatoriamente gluconeogénesis, la cual está totalmente bloqueada por el déficit de FBPasa-1."
+      },
+      {
+        id: 4,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Un joven de 19 años refiere dolor muscular intenso, calambres y fatiga precoz tras realizar ejercicios breves de alta intensidad (levantamiento de pesas), sin elevación de lactato venoso en la prueba de isquemia del antebrazo. El diagnóstico es Enfermedad de McArdle (Glucogenosis tipo V). ¿Cuál es la causa molecular?",
+        options: [
+          "Falta de glucosa-6-fosfatasa en el retículo endoplasmático muscular.",
+          "Deficiencia de la isoforma muscular de la glucógeno fosforilasa (miofosforilasa).",
+          "Inactivación irreversible de la fosfofructoquinasa-1 (PFK-1).",
+          "Deficiencia del transportador GLUT-4 en sarcolema."
+        ],
+        correct: 1,
+        rationale: "La miofosforilasa degrada el glucógeno del miocito para proveer glucosa-1-fosfato durante la contracción anaerobia. Su ausencia impide abastecer la glucólisis muscular en esfuerzo intenso; por eso el lactato no aumenta tras el ejercicio isquémico."
+      },
+      {
+        id: 5,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿Por qué el glucógeno del músculo esquelético NO puede contribuir directamente al mantenimiento de la glucemia plasmática durante el ayuno?",
+        options: [
+          "Porque el músculo carece de transportadores de glucosa GLUT-4.",
+          "Porque el tejido muscular carece de la enzima glucosa-6-fosfatasa.",
+          "Porque el glucagón no posee receptores en el hepatocito.",
+          "Porque la miofosforilasa solo se activa en presencia de niveles elevados de insulina."
+        ],
+        correct: 1,
+        rationale: "El miocito carece de glucosa-6-fosfatasa. La glucosa-6-P obtenida de la glucogenólisis muscular queda atrapada intracelularmente con su grupo fosfato y se utiliza de forma exclusiva para su propio consumo energético."
+      },
+      {
+        id: 6,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Un paciente que inicia tratamiento antipalúdico con primaquina presenta ictericia, orinas oscuras y anemia hemolítica aguda. El frotis revela cuerpos de Heinz. ¿Cuál es el mecanismo bioquímico que explica la lisis celular en el eritrocito con déficit de G6PD?",
+        options: [
+          "Incapacidad de regenerar NADPH, lo que impide mantener el glutatión en su estado reducido (GSH) frente al estrés oxidativo.",
+          "Bloqueo en la síntesis de ATP por la glucólisis dependiente de piruvato quinasa.",
+          "Acumulación tóxica de ribosa-5-fosfato que altera la deformabilidad de la membrana plasmática.",
+          "Falta de síntesis de colesterol para la bicapa lipídica del glóbulo rojo."
+        ],
+        correct: 0,
+        rationale: "En el eritrocito (carente de mitocondrias), la vía de las pentosas fosfato es la única fuente de NADPH. El NADPH mantiene el glutatión en estado reducido (GSH) gracias a la glutatión reductasa para neutralizar peróxidos. Sin NADPH, la hemoglobina se oxida, precipita (cuerpos de Heinz) y la membrana se lisa."
+      },
+      {
+        id: 7,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿Cuál es el efector alostérico positivo más potente de la enzima fosfofructoquinasa-1 (PFK-1) en el hepatocito y qué señal hormonal promueve su síntesis?",
+        options: [
+          "El citrato, estimulado por el glucagón.",
+          "La fructosa-2,6-bisfosfato, sintetizada por la PFK-2 bajo estímulo de la insulina.",
+          "El ATP, estimulado por la adrenalina.",
+          "El acetil-CoA, generado tras la beta-oxidación."
+        ],
+        correct: 1,
+        rationale: "La fructosa-2,6-bisfosfato activa con gran potencia a la PFK-1 y simultáneamente inhibe a la FBPasa-1. La insulina desfosforila la enzima bifuncional PFK-2/FBPasa-2 mediante la proteína fosfatasa-1 (PP1), activando su dominio PFK-2 y aumentando los niveles de este modulador."
+      },
+      {
+        id: 8,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Durante el ayuno, el glucagón ejerce su control sobre la glucólisis y gluconeogénesis hepática a través de la vía del AMP cíclico (AMPc) y la Proteína Quinasa A (PKA). ¿Qué modificación covalente sufre la enzima bifuncional PFK-2/FBPasa-2 en este estado?",
+        options: [
+          "Se desfosforila, activándose el dominio quinasa (PFK-2).",
+          "Se fosforila por la PKA, activándose el dominio fosfatasa (FBPasa-2), lo que reduce la F-2,6-BP y frena la glucólisis.",
+          "Se degrada en los proteasomas por ubiquitinación dependiente de ATP.",
+          "Se fosforila para aumentar la síntesis de fructosa-2,6-bisfosfato y acelerar la piruvato quinasa."
+        ],
+        correct: 1,
+        rationale: "La fosforilación por la PKA activa el dominio fosfatasa (FBPasa-2) e inactiva el dominio quinasa (PFK-2). Al destruirse la fructosa-2,6-bisfosfato, se levanta la inhibición sobre la gluconeogénesis y se apaga la glucólisis hepática."
+      },
+      {
+        id: 9,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "En el enterocito, ¿cuál es el mecanismo responsable de la absorción de glucosa y galactosa a través de la membrana apical luminal contra gradiente electroquímico?",
+        options: [
+          "Transporte facilitado pasivo mediante la isoforma GLUT-2.",
+          "Cotransporte activo secundario dependiente de sodio mediado por el transportador SGLT-1.",
+          "Transporte vesicular acoplado a clatrina.",
+          "Difusión facilitada mediada por transportadores sensibles a insulina GLUT-4."
+        ],
+        correct: 1,
+        rationale: "SGLT-1 (Sodium-Glucose Linked Transporter 1) aprovecha el gradiente favorable de sodio generado por la bomba Na+/K+ ATPasa basolateral para transportar glucosa o galactosa hacia el interior del enterocito en contra de su gradiente."
+      },
+      {
+        id: 10,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿A través de qué transportador de membrana sale la glucosa absorbida en el enterocito hacia la circulación sanguínea portal en la membrana basolateral?",
+        options: [
+          "SGLT-1",
+          "GLUT-1",
+          "GLUT-2",
+          "GLUT-4"
+        ],
+        correct: 2,
+        rationale: "GLUT-2 se localiza en la membrana basolateral de los enterocitos (y en hepatocitos y células beta pancreáticas). Es un transportador de difusión facilitada de alta capacidad y alta Km que permite el egreso rápido de glucosa a los capilares del sistema porta."
+      },
+      {
+        id: 11,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Un paciente adulto presenta diarrea explosiva ácida, distensión y flatulencias minutos después de ingerir leche de vaca. El test de hidrógeno espirado es positivo. ¿Cuál es el fundamento bioquímico de los síntomas?",
+        options: [
+          "Deficiencia de lactasa en el borde en cepillo intestinal, generando efecto osmótico y fermentación bacteriana del disacárido en el colon.",
+          "Inhibición de la sacarasa-isomaltasa por presencia de caseína láctea.",
+          "Bloqueo del transportador GLUT-5 encargado de absorber la galactosa.",
+          "Hiperactivación de la alfa-amilasa pancreática que destruye enterocitos."
+        ],
+        correct: 0,
+        rationale: "La deficiencia de lactasa (beta-galactosidasa en el borde en cepillo) impide hidrolizar lactosa a glucosa y galactosa. La lactosa intacta atrae agua al lumen (efecto osmótico y diarrea) y es fermentada por la microbiota colónica generando gases (H2, CO2, metano) y ácidos grasos volátiles."
+      },
+      {
+        id: 12,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Respecto al Ciclo de Cori, señale la afirmación metabólicamente correcta:",
+        options: [
+          "El lactato producido en el miocito se oxida a glucosa dentro de la misma fibra muscular para ahorrar glucógeno.",
+          "El lactato viaja por sangre al hígado, donde se reoxida a piruvato y se convierte en glucosa mediante gluconeogénesis consumiendo ATP.",
+          "Genera una ganancia neta global de 4 moléculas de ATP para el organismo.",
+          "Solo funciona en presencia de concentraciones muy altas de insulina plasmática."
+        ],
+        correct: 1,
+        rationale: "El Ciclo de Cori transporta lactato (formado en eritrocitos y músculo esquelético anaeróbico) al hígado. El hígado lo oxida a piruvato (vía LDH) y sintetiza glucosa libre con gasto neto de 6 equivalentes de fosfato de alta energía (ATP/GTP), devolviéndola al torrente sanguíneo."
+      },
+      {
+        id: 13,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿Qué enzima de la gluconeogénesis se encuentra localizada de forma exclusiva en el interior de la matriz mitocondrial y requiere biotina como cofactor?",
+        options: [
+          "Fructosa-1,6-bisfosfatasa",
+          "Piruvato quinasa",
+          "Piruvato carboxilasa",
+          "Fosfoenolpiruvato carboxiquinasa citosólica"
+        ],
+        correct: 2,
+        rationale: "La piruvato carboxilasa es puramente mitocondrial, utiliza biotina como cofactor y ATP para carboxilar el piruvato a oxaloacetato. Es activada alostéricamente por el acetil-CoA proveniente de la beta-oxidación."
+      },
+      {
+        id: 14,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "La glucoquinasa hepática (Hexoquinasa IV) se diferencia fundamentalmente de la hexoquinasa muscular (Hexoquinasas I-III) porque:",
+        options: [
+          "Posee una Km baja para la glucosa y se inhibe fuertemente por su producto (glucosa-6-fosfato).",
+          "Posee una Km muy alta (baja afinidad), no se satura a niveles fisiológicos posprandiales y no se inhibe por glucosa-6-fosfato.",
+          "Es transportada al sarcolema únicamente cuando se activa la AMPK durante el ejercicio.",
+          "Cataliza una reacción reversible que sintetiza glucosa libre en ayunas."
+        ],
+        correct: 1,
+        rationale: "La glucoquinasa hepática tiene alta Km, lo que le permite captar glucosa en grandes cantidades solo cuando los niveles de la vena porta están muy elevados (posprandio), evitando la hipoglucemia periférica y no inhibiéndose por G-6-P."
+      },
+      {
+        id: 15,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Durante una situación de hipoxia tisular aguda, como en un Infarto Agudo de Miocardio (IAM), ¿por qué se incrementa exponencialmente la conversión de piruvato a lactato?",
+        options: [
+          "Porque el oxígeno inhibe directamente a la lactato deshidrogenasa.",
+          "Para regenerar el cofactor NAD+ oxidado en el citoplasma y permitir que la glucólisis continúe produciendo ATP por fosforilación a nivel de sustrato.",
+          "Para permitir que el lactato ingrese directamente a la beta-oxidación en los peroxisomas.",
+          "Porque la caída de ATP desnaturaliza a la fosfofructoquinasa-1."
+        ],
+        correct: 1,
+        rationale: "Sin O2, la cadena respiratoria se detiene y la mitocondria no reoxida el NADH citosólico. La LDH reduce piruvato a lactato consumiendo NADH y regenerando NAD+, sustrato imprescindible para que la gliceraldehído-3-fosfato deshidrogenasa mantenga la glucólisis anaerobia."
+      },
+      {
+        id: 16,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "¿Cuál es el destino de la Glucosa-1-fosfato liberada por la acción de la glucógeno fosforilasa?",
+        options: [
+          "Es transportada de inmediato al exterior de la célula por el GLUT-2.",
+          "Es convertida reversiblemente en glucosa-6-fosfato por la enzima fosfoglucomutasa.",
+          "Es desfosforilada en el citoplasma por la glucosa-1-fosfatasa.",
+          "Ingresa directamente al Ciclo de Krebs sin requerir piruvato."
+        ],
+        correct: 1,
+        rationale: "La fosfoglucomutasa cataliza la interconversión reversible entre glucosa-1-fosfato y glucosa-6-fosfato mediante un intermediario glucosa-1,6-bisfosfato, integrándola a la glucólisis o a la salida como glucosa libre."
+      },
+      {
+        id: 17,
+        topic: "glucidos",
+        badge: "Metabolismo de Glúcidos",
+        q: "Respecto a la enzima desramificante del glucógeno, ¿cuáles son las dos actividades catalíticas presentes en su estructura polipeptídica única?",
+        options: [
+          "Fosforilasa y sintetasa.",
+          "Alfa-1,4 transglucosilasa (transferasa) y alfa-1,6 glucosidasa (hidrolasa).",
+          "Queratán sulfatasa y pirofosforilasa.",
+          "Endoglucosidasa y carboxipeptidasa."
+        ],
+        correct: 1,
+        rationale: "Cuando la fosforilasa deja 4 residuos de glucosa antes del punto de ramificación, la transferasa traslada 3 glucosas a la cadena lineal y la actividad alfa-1,6-glucosidasa hidroliza el último residuo enlazado alfa-1,6 liberando una molécula de glucosa libre."
+      },
+
+      // --- LÍPIDOS (18 a 34) ---
+      {
+        id: 18,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "Un niño evaluado por letargo en ayuno presenta hipoglucemia severa asociada a ausencia casi completa de cuerpos cetónicos en plasma y orina (hipoglucemia hipocetósica). El diagnóstico es deficiencia de Carnitina Palmitoiltransferasa I (CPT-1 o CAT-1). ¿Cuál es la función específica de esta enzima?",
+        options: [
+          "Hidrolizar los triglicéridos en el adipocito para liberar ácidos grasos a la sangre.",
+          "Transferir el grupo acilo desde la acil-CoA citosólica a la carnitina en la membrana mitocondrial externa.",
+          "Oxidar el doble enlace trans-delta-2 en el interior de la matriz mitocondrial.",
+          "Sintetizar acetoacetil-CoA en el peroxisoma hepático."
+        ],
+        correct: 1,
+        rationale: "CPT-1 (CAT-1) cataliza la transesterificación del ácido graso activado (acil-CoA) uniéndolo a la carnitina para formar acilcarnitina en la membrana mitocondrial externa, permitiendo que la translocasa lo ingrese a la matriz mitocondrial para ser oxidado."
+      },
+      {
+        id: 19,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Cuál es el regulador alostérico fisiológico que inhibe a la CPT-1 en el estado de saciedad, evitando que los ácidos grasos recién sintetizados entren a la mitocondria para ser oxidados?",
+        options: [
+          "Citrato",
+          "Malonil-CoA",
+          "Acetil-CoA",
+          "Acetoacetato"
+        ],
+        correct: 1,
+        rationale: "El malonil-CoA (primer intermediario sintetizado por la acetil-CoA carboxilasa en la lipogénesis citosólica bajo estímulo de insulina) es un potente inhibidor de la CPT-1. Esto previene un ciclo fútil: mientras se sintetizan grasas, la beta-oxidación permanece apagada."
+      },
+      {
+        id: 20,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "En la beta-oxidación de un ácido graso saturado de cadena par (como el ácido palmítico de 16 carbonos), cada vuelta o espiral del ciclo produce directamente:",
+        options: [
+          "1 ATP y 2 lactatos.",
+          "1 FADH2, 1 NADH y 1 Acetil-CoA.",
+          "2 FADH2 y 1 Malonil-CoA.",
+          "1 NADPH y 1 Propionil-CoA."
+        ],
+        correct: 1,
+        rationale: "Cada espiral de degradación mitocondrial consta de 4 reacciones (oxidación por FAD, hidratación, oxidación por NAD+ y escisión tiolítica por CoA), rindiendo 1 FADH2, 1 NADH y liberando una unidad de dos carbonos como Acetil-CoA."
+      },
+      {
+        id: 21,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Cuál es la enzima marcapasos o limitante de la biosíntesis de ácidos grasos citosólica y cuál es el mecanismo de activación inducido por la insulina?",
+        options: [
+          "Ácido graso sintasa; fosforilación por PKA.",
+          "Acetil-CoA Carboxilasa (ACC); desfosforilación covalente mediada por proteína fosfatasa y polimerización por citrato.",
+          "Tiolasa mitocondrial; inducción por glucagón.",
+          "Lipasa sensible a hormonas; activación por adrenalina."
+        ],
+        correct: 1,
+        rationale: "La Acetil-CoA Carboxilasa (ACC) cataliza la carboxilación dependiente de biotina de acetil-CoA a malonil-CoA. La insulina activa una fosfatasa que la desfosforila a su forma activa, y el citrato citosólico induce su polimerización activa."
+      },
+      {
+        id: 22,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "Para que ocurra la síntesis de novo de ácidos grasos en el citoplasma, los carbonos del acetil-CoA mitocondrial deben cruzar la membrana interna impermeable. ¿En qué forma molecular abandonan la mitocondria?",
+        options: [
+          "Como Malonil-CoA libre.",
+          "Como Citrato, a través del transportador de tricarboxilatos.",
+          "Como Carnitina acilada.",
+          "Como Acetoacetato mediante difusión simple."
+        ],
+        correct: 1,
+        rationale: "El acetil-CoA se condensa con oxaloacetato formando citrato en la mitocondria. El citrato cruza hacia el citosol por el transportador de tricarboxilatos, donde la enzima ATP-citrato liasa lo escinde nuevamente en acetil-CoA citosólico y oxaloacetato."
+      },
+      {
+        id: 23,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "La enzima responsable de movilizar triacilgliceroles en el tejido adiposo durante el ayuno o el estrés es la Lipasa Sensible a Hormonas (LHS/HSL). ¿Cómo se activa covalentemente?",
+        options: [
+          "Por desfosforilación mediada por la insulina y la fosfatasa PP1.",
+          "Por fosforilación mediada por la Proteína Quinasa A (PKA) dependiente de AMPc activada por glucagón y adrenalina.",
+          "Por unión directa a la apolipoproteína ApoC-II en la luz del capilar.",
+          "Por escisión proteolítica en el lumen del retículo endoplásmico."
+        ],
+        correct: 1,
+        rationale: "El glucagón y la adrenalina aumentan el AMPc, activando a la PKA. La PKA fosforila a la perilipina (abriendo el acceso a la gota lipídica) y a la Lipasa Sensible a Hormonas (LHS), activándola para liberar ácidos grasos libres y glicerol."
+      },
+      {
+        id: 24,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Cuál es el cofactor reductor indispensable para la síntesis de ácidos grasos y qué vía metabólica citosólica lo provee prioritariamente en el hepatocito y adipocito?",
+        options: [
+          "FADH2; cadena respiratoria mitocondrial.",
+          "NADH; ciclo de Krebs.",
+          "NADPH; Vía de las Pentosas Fosfato y enzima málica.",
+          "GTP; gluconeogénesis hepática."
+        ],
+        correct: 2,
+        rationale: "El complejo ácido graso sintasa requiere 2 NADPH por cada vuelta de elongación de 2 carbonos. Las fuentes principales de NADPH son la fase oxidativa de la vía de las pentosas fosfato (G6PD/6-PGD) y la enzima málica citosólica."
+      },
+      {
+        id: 25,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Cuál es la enzima marcapasos o limitante en la ruta de síntesis del colesterol humano y qué fármacos actúan como sus inhibidores competitivos?",
+        options: [
+          "HMG-CoA sintasa citosólica; los fibratos.",
+          "HMG-CoA reductasa; las estatinas (como atorvastatina o simvastatina).",
+          "Escualeno monooxigenasa; la ezetimiba.",
+          "7-alfa-hidroxilasa; la colestiramina."
+        ],
+        correct: 1,
+        rationale: "La HMG-CoA reductasa cataliza la reducción de HMG-CoA a mevalonato en la membrana del retículo endoplásmico. Las estatinas son análogos estructurales que inhiben competitivamente su sitio catalítico, elevando la Km sin modificar la Vmax."
+      },
+      {
+        id: 26,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "Cuando los niveles de colesterol libre intracelular en el hepatocito están elevados, ¿cómo se regula a largo plazo la transcripción génica del receptor de LDL y de la HMG-CoA reductasa?",
+        options: [
+          "El complejo SREBP-SCAP viaja aceleradamente al Golgi para activar genes en el núcleo.",
+          "El complejo SREBP-SCAP queda retenido en el retículo endoplasmático unido a INSIG, frenando la transcripción de nuevos receptores de LDL y HMG-CoA reductasa.",
+          "El colesterol fosforila a la ARN polimerasa II para duplicar la síntesis proteica.",
+          "Se induce la secreción de ApoB-48 hacia la bilis."
+        ],
+        correct: 1,
+        rationale: "El colesterol elevado se une a SCAP, estabilizando el complejo con la proteína INSIG en la membrana del RE. Esto impide su migración al Golgi, donde normalmente sufriría proteólisis para liberar el dominio activo de SREBP-2 hacia el núcleo."
+      },
+      {
+        id: 27,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Qué función cumple la apolipoproteína ApoC-II presente en los quilomicrones y VLDL maduros?",
+        options: [
+          "Es el ligando para la endocitosis del remanente en el receptor hepático ApoE/LDL.",
+          "Es el activador/cofactor indispensable de la enzima Lipoproteína Lipasa (LPL) en el endotelio capilar periférico.",
+          "Inhibe la esterificación del colesterol mediada por la LCAT.",
+          "Permite el empaquetamiento intestinal inicial en el enterocito en lugar de la ApoB-48."
+        ],
+        correct: 1,
+        rationale: "ApoC-II (transferida desde las HDL circulantes a los quilomicrones y VLDL) activa a la Lipoproteína Lipasa (LPL) anclada al endotelio capilar de músculo y tejido adiposo para hidrolizar los triglicéridos a ácidos grasos y glicerol."
+      },
+      {
+        id: 28,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "Una paciente de 47 años con hipertrigliceridemia e hipercolesterolemia recibe tratamiento con fibratos (ej. gemfibrozil). ¿Cuál es el mecanismo de acción de esta familia de fármacos?",
+        options: [
+          "Inhibición competitiva directa de la HMG-CoA reductasa microsomal.",
+          "Agonistas de los receptores nucleares PPAR-alfa, que inducen la transcripción de la Lipoproteína Lipasa (LPL) y genes de la beta-oxidación hepática.",
+          "Quelación de sales biliares en el lumen del íleon terminal.",
+          "Bloqueo irreversible de la ciclooxigenasa plaquetaria."
+        ],
+        correct: 1,
+        rationale: "Los fibratos se unen al receptor nuclear PPAR-alfa, aumentando la expresión de LPL endotelial (acelerando el aclaramiento de triglicéridos en quilomicrones y VLDL) y promoviendo la captación y beta-oxidación de ácidos grasos."
+      },
+      {
+        id: 29,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "En la patogenia de la aterosclerosis, ¿cuál es el paso fisiopatológico desencadenante de la formación de las 'células espumosas' (foam cells) en la íntima arterial?",
+        options: [
+          "La captación de HDL nativa por los receptores scavenger de las células endoteliales.",
+          "La captación descontrolada de partículas LDL oxidadas o modificadas a través de los receptores Scavenger (basurero) de los macrófagos.",
+          "La degradación masiva de quilomicrones maduros en la adventicia.",
+          "La precipitación directa de cristales de urato sódico."
+        ],
+        correct: 1,
+        rationale: "Las LDL retenidas en la pared arterial sufren estrés oxidativo (LDLox). Los macrófagos expresan receptores scavenger que no se regulan por retroalimentación negativa, internalizando colesterol masivamente hasta transformarse en células espumosas, núcleo de la estría grasa."
+      },
+      {
+        id: 30,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Qué lipoproteína es responsable del denominado 'transporte reverso del colesterol' y qué enzima plasmática utiliza para esterificar el colesterol captado de los tejidos periféricos?",
+        options: [
+          "LDL; Lipasa Hepática.",
+          "VLDL; Lipoproteína Lipasa.",
+          "HDL; Lecitina-Colesterol Aciltransferasa (LCAT).",
+          "Quilomicrón; Colesterol Esterasa intestinal."
+        ],
+        correct: 2,
+        rationale: "Las HDL captan colesterol libre de las membranas celulares extrahepáticas. La enzima LCAT (activada por ApoA-I) transfiere un ácido graso de la fosfatidilcolina al colesterol, generando ésteres hidrofóbicos que migran al núcleo de la HDL para ser llevados al hígado."
+      },
+      {
+        id: 31,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Por qué el organismo humano NO puede obtener energía metabólica oxidativa (ATP) a partir de la degradación del núcleo esteroideo del colesterol?",
+        options: [
+          "Porque el colesterol carece de átomos de carbono reductibles.",
+          "Porque las células humanas no poseen enzimas capaces de romper el anillo de ciclopentanoperhidrofenantreno; el colesterol se excreta como ácidos/sales biliares o colesterol fecal.",
+          "Porque se elimina exclusivamente por filtración glomerular en la orina.",
+          "Porque la carnitina no transporta moléculas de más de 20 carbonos."
+        ],
+        correct: 1,
+        rationale: "El ser humano carece de enzimas catabólicas para romper los cuatro anillos fusionados del ciclopentanoperhidrofenantreno. La única vía para eliminar el exceso de colesterol es convertirlo en ácidos/sales biliares en el hígado y excretarlo por vía biliar hacia las heces."
+      },
+      {
+        id: 32,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "La enzima HMG-CoA sintasa mitocondrial es el paso marcapasos de la síntesis de cuerpos cetónicos. ¿Dónde se localiza tisularmente esta vía de forma exclusiva?",
+        options: [
+          "En el citoplasma de los miocitos esqueléticos.",
+          "En la matriz mitocondrial de los hepatocitos.",
+          "En los astrocitos del sistema nervioso central.",
+          "En la corteza renal y eritrocitos."
+        ],
+        correct: 1,
+        rationale: "El hígado es el único órgano cetogénico neto debido a que expresa altas concentraciones de la isoforma mitocondrial de la HMG-CoA sintasa. Sintetiza acetoacetato y beta-hidroxibutirato y los exporta a la sangre."
+      },
+      {
+        id: 33,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "¿Por qué el hígado NO puede utilizar los cuerpos cetónicos que él mismo sintetiza como combustible metabólico?",
+        options: [
+          "Porque los cuerpos cetónicos no pueden atravesar la membrana mitocondrial hepática.",
+          "Porque el hepatocito carece de la enzima beta-cetoacil-CoA transferasa (tioforasa).",
+          "Porque el glucagón destruye al acetoacetato dentro del hígado.",
+          "Porque la tiolasa hepática solo funciona en sentido anabólico citosólico."
+        ],
+        correct: 1,
+        rationale: "El hígado carece de succinil-CoA:3-cetoácido CoA transferasa (tioforasa). Esta enzima es obligatoria en tejidos periféricos (cerebro, músculo, miocardio) para activar el acetoacetato a acetoacetil-CoA y permitir su oxidación a acetil-CoA."
+      },
+      {
+        id: 34,
+        topic: "lipidos",
+        badge: "Metabolismo de Lípidos",
+        q: "Tras sufrir un infarto agudo de miocardio, a un paciente se le prescribe dosis bajas de ácido acetilsalicílico (aspirina). ¿Cuál es el blanco enzimático directo y qué molécula proagregante plaquetaria deja de sintetizarse?",
+        options: [
+          "Inhibe a la Fosfolipasa A2, frenando los leucotrienos.",
+          "Acetila e inhibe irreversiblemente a la Ciclooxigenasa-1 (COX-1), impidiendo la síntesis de Tromboxano A2 (TXA2) en las plaquetas.",
+          "Inhibe competitivamente a la lipoxigenasa, reduciendo la PGI2.",
+          "Bloquea la HMG-CoA reductasa endotelial."
+        ],
+        correct: 1,
+        rationale: "La aspirina acetila irreversiblemente el residuo de serina del sitio activo de la COX-1 plaquetaria. Las plaquetas (anucleadas) no pueden sintetizar nueva enzima, cesando la producción de Tromboxano A2 (potente vasoconstrictor y agregante plaquetario) durante toda su vida media."
+      },
+
+      // --- INTEGRACIÓN Y CASOS CLÍNICOS (35 a 50) ---
+      {
+        id: 35,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "Marcela, paciente con Diabetes Mellitus Tipo 1, interrumpe su dosis de insulina durante 5 días. Ingresa a la guardia estuporosa, deshidratada, taquipneica con respiración de Kussmaul y aliento cetónico ('a manzanas'). Bioquímicamente, ¿cuál es el origen inicial de la cetoacidosis?",
+        options: [
+          "El exceso de captación periférica de glucosa por hiperactivación de GLUT-4.",
+          "La desinhibición extrema de la Lipasa Sensible a Hormonas (LHS) en el tejido adiposo ante la ausencia de insulina, volcando ácidos grasos masivos al hígado.",
+          "La sobreexpresión de la enzima glucoquinasa en los hepatocitos.",
+          "La degradación de urea hepática convertida en ácidos libres en el riñón."
+        ],
+        correct: 1,
+        rationale: "Sin insulina, el cociente insulina/glucagón se desploma. La PKA fosforila la LHS en el adipocito desatando una lipólisis masiva. La llegada torrencial de ácidos grasos al hígado alimenta una beta-oxidación descontrolada con excedente de acetil-CoA que se vuelca a cetogénesis."
+      },
+      {
+        id: 36,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En la cetoacidosis diabética descompensada, ¿por qué el inmenso excedente de Acetil-CoA hepático NO puede entrar al Ciclo de Krebs y se desvía forzadamente hacia la cetogénesis?",
+        options: [
+          "Porque el Ciclo de Krebs está inhibido por falta total de ATP.",
+          "Porque el oxaloacetato mitocondrial se encuentra depletado, al estar siendo consumido activamente por la gluconeogénesis.",
+          "Porque el glucagón destruye a la citrato sintasa en la mitocondria.",
+          "Porque los ácidos grasos degradan a las enzimas del ciclo de Krebs en el citoplasma."
+        ],
+        correct: 1,
+        rationale: "En el hepatocito con glucagón absoluto, la gluconeogénesis trabaja al máximo, canalizando todo el oxaloacetato mitocondrial hacia malato y glucosa. Sin oxaloacetato disponible para condensar el acetil-CoA en citrato, la enzima HMG-CoA sintasa mitocondrial canaliza el excedente hacia cuerpos cetónicos."
+      },
+      {
+        id: 37,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En un paciente con Diabetes Tipo 1 descompensada, ¿tiene fundamento bioquímico administrar fármacos inhibidores de la DPP-4 (gliptinas)?",
+        options: [
+          "Sí, porque los inhibidores de DPP-4 inhiben directamente a la lipasa sensible a hormonas en el tejido graso.",
+          "No, porque las incretinas (GLP-1) dependen de la presencia de células beta pancreáticas funcionales para estimular la secreción de insulina, las cuales están destruidas en la DM1.",
+          "Sí, porque aumentan la degradación de cuerpos cetónicos a nivel mitocondrial renal.",
+          "Sí, porque sustituyen a las inyecciones de insulina basal."
+        ],
+        correct: 1,
+        rationale: "Los inhibidores de DPP-4 evitan la degradación del GLP-1 endógeno, cuya acción consiste en estimular la secreción de insulina dependiente de glucosa por las células beta del páncreas. En la DM1 existe destrucción autoinmune de estas células; sin reserva beta, el fármaco carece de eficacia clínica."
+      },
+      {
+        id: 38,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "Durante un ayuno fisiológico prolongado (superior a 48-72 horas), ¿cuál es el principal combustible oxidativo que utiliza el cerebro para permitir el 'ahorro proteico' muscular?",
+        options: [
+          "Ácidos grasos libres unidos a albúmina.",
+          "Cuerpos cetónicos (acetoacetato y beta-hidroxibutirato).",
+          "Aminoácidos ramificados (valina, leucina, isoleucina).",
+          "Quilomicrones maduros."
+        ],
+        correct: 1,
+        rationale: "Los ácidos grasos no atraviesan la barrera hematoencefálica con suficiente velocidad. El cerebro se adapta utilizando cuerpos cetónicos, reduciendo su consumo de glucosa de 120 g/día a menos de 40 g/día. Esto evita degradar proteína muscular (alanina) para gluconeogénesis (ahorro proteico)."
+      },
+      {
+        id: 39,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Cuál de los siguientes sustratos derivados de los triacilgliceroles adipocitarios es el ÚNICO capaz de generar una síntesis neta de glucosa por gluconeogénesis hepática en mamíferos?",
+        options: [
+          "Ácido palmítico (saturado 16:0)",
+          "Ácido oleico (monoinsaturado 18:1)",
+          "Glicerol",
+          "Acetil-CoA mitocondrial"
+        ],
+        correct: 2,
+        rationale: "Los ácidos grasos rinden acetil-CoA, cuyos carbonos se eliminan como 2 CO2 en Krebs sin balance neto. El glicerol es fosforilado en el hepatocito por la glicerol quinasa a glicerol-3-fosfato, oxidado a dihidroxiacetona fosfato e incorporado directamente como triosa fosfato en la gluconeogénesis."
+      },
+      {
+        id: 40,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En el ayuno intermedio, el Ciclo de la Glucosa-Alanina cumple una doble función esencial entre el músculo esquelético y el hígado. Estas funciones son:",
+        options: [
+          "Transportar urea al músculo para obtener energía y formar creatina.",
+          "Transportar grupos amino tóxicos sin generar amoníaco libre en sangre y entregar un esqueleto carbonado (piruvato) para la gluconeogénesis hepática.",
+          "Sintetizar glucógeno en el músculo directamente a partir de alanina.",
+          "Inactivar al glucagón plasmático mediante unión peptídica."
+        ],
+        correct: 1,
+        rationale: "El músculo transamina el piruvato con glutamato generando alanina (ALT). La alanina viaja por sangre al hígado de manera no tóxica. En el hepatocito se desamina: el nitrógeno entra al Ciclo de la Urea y el piruvato regenerado ingresa a la gluconeogénesis."
+      },
+      {
+        id: 41,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Por qué la ingestión aguda o crónica de cantidades excesivas de etanol (alcohol) bloquea la gluconeogénesis hepática y predispone a hipoglucemia severa en individuos en ayunas?",
+        options: [
+          "Porque el etanol estimula la translocación masiva de GLUT-4 en el hígado.",
+          "Porque la metabolización hepática del etanol por la alcohol deshidrogenasa genera un aumento masivo de la relación NADH/NAD+ en el citosol.",
+          "Porque el acetaldehído inhibe irreversiblemente a la glucógeno sintasa.",
+          "Porque el etanol activa de forma covalente a la piruvato carboxilasa."
+        ],
+        correct: 1,
+        rationale: "El alto cociente NADH/NAD+ desplaza el equilibrio de reacciones reversibles: piruvato se reduce a lactato (generando acidosis láctica) y oxaloacetato se reduce a malato. Al privar al hepatocito de piruvato y oxaloacetato libres, la gluconeogénesis queda frenada."
+      },
+      {
+        id: 42,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "Una dieta hipercalórica rica en glúcidos de rápida absorción sostenida en el tiempo produce esteatosis hepática (hígado graso) y elevación de VLDL plasmáticas. ¿Cuál es la secuencia molecular causal?",
+        options: [
+          "Inhibición de la glucólisis por exceso de ATP y degradación de los receptores de insulina.",
+          "El exceso de glucosa activa la lipogénesis de novo hepática (insulina -> ACC -> ácidos grasos), sintetizando triacilgliceroles que se empaquetan en VLDL con ApoB-100.",
+          "La absorción exclusiva de colesterol en enterocitos transportado por quilomicrones que saturan la bilis.",
+          "La estimulación de la beta-oxidación peroxisomal que vuelca grasas al citoplasma."
+        ],
+        correct: 1,
+        rationale: "El exceso crónico de glúcidos satura el glucógeno. La insulina activa PDH, Citrato Liasa y Acetil-CoA Carboxilasa (lipogénesis de novo). Los ácidos grasos formados se esterifican a TAG y se ensamblan como VLDL. Si la tasa de síntesis excede la capacidad de exportación, se acumulan gotas lipídicas (esteatosis)."
+      },
+      {
+        id: 43,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Cómo logra el músculo esquelético activo captar glucosa durante el ejercicio físico intenso incluso en presencia de niveles basales muy bajos de insulina?",
+        options: [
+          "El aumento de AMP celular activa a la quinasa AMPK, induciendo la translocación de vesículas con GLUT-4 a la membrana independientemente de la insulina.",
+          "El sarcolema sintetiza transportadores SGLT-1 que cotransportan sodio y lactato.",
+          "La adrenalina fosforila directamente a los transportadores GLUT-2 hepáticos para desviarlos al músculo.",
+          "El glucagón abre canales iónicos de glucosa dependientes de voltaje en los túbulos T."
+        ],
+        correct: 0,
+        rationale: "La contracción consume ATP y eleva el AMP libre, activando a la AMP-activated protein kinase (AMPK) y vías dependientes de calcio/CaMKII. Estas señales promueven la fusión de vesículas con GLUT-4 con la membrana sarcolémica sin requerir señalización insulínica."
+      },
+      {
+        id: 44,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En el estado de saciedad posprandial, ¿qué efecto ejerce la insulina sobre la Lipoproteína Lipasa (LPL) endotelial del tejido adiposo y cómo impacta en los lípidos plasmáticos?",
+        options: [
+          "Inhibe a la LPL, causando hiperquilomicronemia postprandial prolongada.",
+          "Induce la síntesis y translocación de la LPL al endotelio capilar del tejido adiposo, favoreciendo la captación y almacenamiento de TAG de quilomicrones y VLDL.",
+          "Promueve la degradación lisosomal de la ApoC-II en los capilares.",
+          "Fosforila la LPL volviéndola selectiva únicamente para ésteres de colesterol."
+        ],
+        correct: 1,
+        rationale: "La insulina aumenta selectivamente la síntesis y secreción de LPL en el endotelio del tejido adiposo. Esto permite depurar eficazmente los triacilgliceroles circulantes aportados por quilomicrones (dieta) y VLDL (hepáticas), almacenándolos en la gota lipídica adipocitaria."
+      },
+      {
+        id: 45,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "A las 14-16 horas de ayuno fisiológico, ¿cuál es el estado de las vías metabólicas en el hepatocito humano?",
+        options: [
+          "Glucogenogénesis activa, lipólisis inhibida, glucólisis acelerada.",
+          "Glucógeno hepático en depleción progresiva, gluconeogénesis hepática activa y beta-oxidación de ácidos grasos acelerada para proveer ATP y NADH.",
+          "Cetogénesis descompensada con cetoacidosis metabólica severa.",
+          "Paro absoluto de la producción hepática de glucosa por falta de sustratos."
+        ],
+        correct: 1,
+        rationale: "A las 14-16 h, el glucógeno hepático suministró glucosa inicialmente pero se encuentra casi agotado. La gluconeogénesis se transforma en la fuente primaria de glucemia, sostenida energéticamente por el ATP, NADH y acetil-CoA derivados de la beta-oxidación de ácidos grasos libres."
+      },
+      {
+        id: 46,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Por qué el aumento intracelular de Acetil-CoA derivado de la beta-oxidación estimula la gluconeogénesis y frena el consumo de glucosa en el hepatocito?",
+        options: [
+          "Porque inhibe alostéricamente a la piruvato deshidrogenasa (PDH) y activa a la piruvato carboxilasa.",
+          "Porque desnaturaliza a la fosfofructoquinasa-1 por acidificación.",
+          "Porque compite con el citrato en la membrana externa mitocondrial.",
+          "Porque activa la translocación de transportadores GLUT-1 al citosol."
+        ],
+        correct: 0,
+        rationale: "El acetil-CoA es un modulador alostérico recíproco clave: inhibe fuertemente al complejo Piruvato Deshidrogenasa (evitando que el piruvato se oxide irreversiblemente) y activa a la Piruvato Carboxilasa, dirigiendo el piruvato hacia oxaloacetato y gluconeogénesis."
+      },
+      {
+        id: 47,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En una paciente obesa sedentaria con Diabetes Mellitus Tipo 2 y resistencia periférica a la insulina, ¿qué alteración enzimática explica que mantenga glucemias basales elevadas aun en ayunas?",
+        options: [
+          "Ausencia congénita de glucoquinasa pancreática.",
+          "Falla en la supresión insulínica de la transcripción de fosfoenolpiruvato carboxiquinasa (PEPCK) y glucosa-6-fosfatasa, manteniendo una gluconeogénesis hepática inapropiadamente activa.",
+          "Hiperactivación constitutiva de la glucógeno sintasa muscular.",
+          "Degradación intravascular de la apolipoproteína ApoB-100."
+        ],
+        correct: 1,
+        rationale: "La resistencia a la insulina hepática impide la inactivación de factores de transcripción como FoxO1. En consecuencia, las enzimas gluconeogénicas (PEPCK y G6Pasa) se expresan continuamente, liberando glucosa a la sangre a pesar de la hiperglucemia e hiperinsulinemia basal."
+      },
+      {
+        id: 48,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Cuál de las siguientes lipoproteínas plasmáticas posee el MENOR diámetro relativo, la MAYOR densidad y el contenido porcentual proteico más elevado?",
+        options: [
+          "Quilomicrón",
+          "VLDL",
+          "LDL",
+          "HDL"
+        ],
+        correct: 3,
+        rationale: "La densidad de una lipoproteína es directamente proporcional a su proporción proteica e inversamente proporcional a su contenido lipídico. Las HDL son las más densas (1.063-1.210 g/mL) y pequeñas (5-12 nm), compuestas por casi 50% de proteínas (ApoA-I principal)."
+      },
+      {
+        id: 49,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "En una paciente que sigue una dieta cetogénica estricta ('cero carbohidratos, alto contenido lipídico') durante 2 semanas, ¿cuál será el perfil metabólico hepático predominante?",
+        options: [
+          "Glucólisis activa estimulada por fructosa-2,6-bisfosfato, inhibición de la beta-oxidación y esteatosis masiva por malonil-CoA.",
+          "Alta actividad de gluconeogénesis a partir de glicerol/aminoácidos, beta-oxidación de ácidos grasos elevada y síntesis activa de cuerpos cetónicos.",
+          "Ausencia de síntesis de ATP mitocondrial y bloqueo total del ciclo de Krebs en todos los órganos.",
+          "Hiperinsulinemia sostenida que estimula la síntesis de glucógeno y secreción de quilomicrones hepáticos."
+        ],
+        correct: 1,
+        rationale: "La falta de carbohidratos deprime la insulina y sostiene niveles altos de glucagón/adrenalina. El hígado activa la beta-oxidación mitocondrial masiva para energizar la gluconeogénesis y produce cuerpos cetónicos que proveen combustible al cerebro y músculo."
+      },
+      {
+        id: 50,
+        topic: "integracion",
+        badge: "Integración Glúcidos-Lípidos",
+        q: "¿Qué diferencia existe en la composición y función entre los Quilomicrones y las VLDL?",
+        options: [
+          "Los quilomicrones se originan en el hígado con ApoB-100; las VLDL se originan en el enterocito con ApoB-48.",
+          "Los quilomicrones transportan lípidos exógenos (dieta) con ApoB-48 desde el intestino; las VLDL transportan lípidos endógenos con ApoB-100 desde el hígado.",
+          "Ambas lipoproteínas son sintetizadas exclusivamente en el tejido adiposo para exportar colesterol libre.",
+          "Los quilomicrones no contienen triacilgliceroles, sino que están formados exclusivamente por fosfolípidos."
+        ],
+        correct: 1,
+        rationale: "Los quilomicrones se ensamblan en enterocitos empaquetando triglicéridos de la dieta con ApoB-48 intestinal. Las VLDL se ensamblan en hepatocitos empaquetando triglicéridos de síntesis endógena con ApoB-100. Ambas interactúan con la LPL capilar mediante la ApoC-II."
+      }
+    ];
+
+    // ESTADO DE LA APLICACIÓN
+    let userAnswers = {};
+    let currentFilter = 'all';
+
+    // RENDERIZAR NAVEGADOR
+    function renderGrid() {
+      const grid = document.getElementById('grid-container');
+      grid.innerHTML = '';
+
+      questions.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.id = `grid-btn-${item.id}`;
+        btn.textContent = item.id;
+
+        const isAnswered = userAnswers[item.id] !== undefined;
+        if (isAnswered) {
+          const isCorrect = userAnswers[item.id] === item.correct;
+          btn.className = isCorrect 
+            ? `text-[11px] font-bold py-1.5 rounded transition border border-emerald-500 bg-emerald-600 text-white`
+            : `text-[11px] font-bold py-1.5 rounded transition border border-rose-400 bg-rose-600 text-white`;
+        } else {
+          btn.className = `text-[11px] font-bold py-1.5 rounded transition border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200`;
+        }
+
+        btn.onclick = () => {
+          const el = document.getElementById(`question-card-${item.id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-2', 'ring-sky-500');
+            setTimeout(() => el.classList.remove('ring-2', 'ring-sky-500'), 1500);
+          }
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    // RENDERIZAR PREGUNTAS
+    function renderQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+
+      const filtered = questions.filter(q => currentFilter === 'all' || q.topic === currentFilter);
+
+      filtered.forEach((q) => {
+        const card = document.createElement('div');
+        card.id = `question-card-${q.id}`;
+        card.className = "bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm transition";
+
+        let optionsHtml = '';
+        const letters = ['A', 'B', 'C', 'D'];
+        q.options.forEach((opt, optIdx) => {
+          const isSelected = userAnswers[q.id] === optIdx;
+          let optClasses = "w-full text-left p-3.5 rounded-lg border text-xs sm:text-sm font-normal transition flex items-start gap-3 ";
+          
+          if (userAnswers[q.id] !== undefined) {
+            if (optIdx === q.correct) {
+              optClasses += "bg-emerald-50 border-emerald-500 text-emerald-900 font-medium";
+            } else if (isSelected && optIdx !== q.correct) {
+              optClasses += "bg-rose-50 border-rose-400 text-rose-900";
+            } else {
+              optClasses += "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+            }
+          } else {
+            optClasses += "border-slate-200 bg-white hover:bg-slate-50 text-slate-800 hover:border-slate-300";
+          }
+
+          optionsHtml += `
+            <button onclick="selectOption(${q.id}, ${optIdx})" class="${optClasses}">
+              <span class="w-6 h-6 rounded-full border text-xs flex items-center justify-center font-bold shrink-0 ${isSelected ? 'bg-sky-700 text-white border-sky-700' : 'bg-slate-100 text-slate-600 border-slate-200'}">
+                ${letters[optIdx]}
+              </span>
+              <span class="pt-0.5 leading-snug">${opt}</span>
+            </button>
+          `;
+        });
+
+        let justificationHtml = '';
+        if (userAnswers[q.id] !== undefined) {
+          const isCorrect = userAnswers[q.id] === q.correct;
+          justificationHtml = `
+            <div class="mt-4 p-4 rounded-lg border text-xs sm:text-sm ${isCorrect ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : 'bg-rose-50/80 border-rose-200 text-slate-900'}">
+              <div class="flex items-center gap-2 font-bold mb-1.5 ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                <span>${isCorrect ? '✓ Respuesta Correcta: Opción ' + letters[q.correct] : '✗ Respuesta Incorrecta (Correcta: Opción ' + letters[q.correct] + ')'}</span>
+              </div>
+              <p class="leading-relaxed"><strong class="font-semibold text-slate-800">Justificación Bioquímica:</strong> ${q.rationale}</p>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+              ${q.badge}
+            </span>
+            <span class="text-xs font-bold text-slate-400">Pregunta ${q.id} de 50</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-semibold text-slate-900 leading-snug mb-4">
+            ${q.q}
+          </h3>
+          <div class="space-y-2.5">
+            ${optionsHtml}
+          </div>
+          ${justificationHtml}
+        `;
+
+        container.appendChild(card);
+      });
+
+      updateProgress();
+    }
+
+    // SELECCIÓN DE RESPUESTA CON FEEDBACK INMEDIATO
+    function selectOption(questionId, optIndex) {
+      if (userAnswers[questionId] !== undefined) return; // bloqueado tras responder para estudio firme
+      userAnswers[questionId] = optIndex;
+      
+      const q = questions.find(item => item.id === questionId);
+      const isCorrect = optIndex === q.correct;
+
+      // Actualizar botón en la cuadrícula
+      const gridBtn = document.getElementById(`grid-btn-${questionId}`);
+      if (gridBtn) {
+        if (isCorrect) {
+          gridBtn.className = `text-[11px] font-bold py-1.5 rounded transition border border-emerald-500 bg-emerald-600 text-white`;
+        } else {
+          gridBtn.className = `text-[11px] font-bold py-1.5 rounded transition border border-rose-400 bg-rose-600 text-white`;
+        }
+      }
+
+      renderQuestions();
+    }
+
+    // PROGRESO Y CONTADORES
+    function updateProgress() {
+      const count = Object.keys(userAnswers).length;
+      document.getElementById('answered-count').textContent = count;
+    }
+
+    // FILTRO DE EJES TEMÁTICOS
+    function setFilter(topic) {
+      currentFilter = topic;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = "filter-btn text-xs px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      });
+      const activeBtn = document.getElementById(`btn-filter-${topic}`);
+      if (activeBtn) {
+        activeBtn.className = "filter-btn text-xs px-3 py-1.5 rounded-lg font-semibold bg-slate-900 text-white transition";
+      }
+      renderQuestions();
+    }
+
+    // CONTROL DEL MODAL DE REINICIO
+    function openResetModal() {
+      const modal = document.getElementById('reset-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      const modal = document.getElementById('reset-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // REINICIAR TEST
+    function confirmReset() {
+      userAnswers = {};
+      renderGrid();
+      renderQuestions();
+      updateProgress();
+      closeResetModal();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // INICIALIZACIÓN
+    window.onload = () => {
+      renderGrid();
+      renderQuestions();
+    };
+  </script>
+</body>
+</html>
