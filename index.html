@@ -16,6 +16,9 @@
       --teal-deep: #134e4a;
       --accent: #2dd4bf;
       --line: rgba(243, 250, 247, 0.28);
+      --muted: rgba(12, 31, 28, 0.72);
+      --panel: #f3faf7;
+      --panel-ink: #0c1f1c;
     }
 
     * {
@@ -73,9 +76,9 @@
 
     .brand {
       font-family: "Fraunces", serif;
-      font-size: clamp(3.2rem, 10vw, 5.6rem);
+      font-size: clamp(2.4rem, 8vw, 4.4rem);
       font-weight: 700;
-      line-height: 0.95;
+      line-height: 0.98;
       letter-spacing: -0.03em;
       margin-bottom: 1rem;
     }
@@ -152,6 +155,111 @@
     .modules li:nth-child(3) { animation-delay: 0.35s; }
     .modules li:nth-child(4) { animation-delay: 0.45s; }
 
+    .section {
+      padding: clamp(4rem, 10vw, 6.5rem) 1.25rem;
+    }
+
+    .section__inner {
+      width: min(720px, 100%);
+      margin: 0 auto;
+    }
+
+    .section__title {
+      font-family: "Fraunces", serif;
+      font-size: clamp(1.85rem, 4.5vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.85rem;
+    }
+
+    .section__lead {
+      font-size: 1.02rem;
+      line-height: 1.65;
+      margin-bottom: 1.75rem;
+      max-width: 42ch;
+    }
+
+    .about {
+      background:
+        linear-gradient(160deg, #e8f6f1 0%, #f3faf7 55%, #dff3ec 100%);
+      color: var(--panel-ink);
+    }
+
+    .about .section__lead {
+      color: var(--muted);
+    }
+
+    .about__list {
+      list-style: none;
+      display: grid;
+      gap: 1.35rem;
+      border-top: 1px solid rgba(12, 31, 28, 0.12);
+      padding-top: 1.5rem;
+    }
+
+    .about__list li {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .about__label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .about__text {
+      font-size: 1.02rem;
+      line-height: 1.6;
+      color: rgba(12, 31, 28, 0.88);
+    }
+
+    .contact {
+      background:
+        radial-gradient(ellipse at 80% 20%, rgba(45, 212, 191, 0.16), transparent 45%),
+        var(--ink);
+      color: var(--foam);
+    }
+
+    .contact .section__lead {
+      color: rgba(243, 250, 247, 0.72);
+    }
+
+    .instagram {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+      color: var(--foam);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.05rem;
+      border-bottom: 1px solid rgba(45, 212, 191, 0.45);
+      padding-bottom: 0.35rem;
+      transition: color 0.25s ease, border-color 0.25s ease, gap 0.25s ease;
+    }
+
+    .instagram:hover,
+    .instagram:focus-visible {
+      color: var(--accent);
+      border-color: var(--accent);
+      gap: 1.05rem;
+      outline: none;
+    }
+
+    .instagram svg {
+      width: 1.35rem;
+      height: 1.35rem;
+      flex-shrink: 0;
+    }
+
+    .instagram__handle {
+      font-family: "Fraunces", serif;
+      font-size: 1.25rem;
+    }
+
     @keyframes drift {
       from { transform: scale(1.06) translate3d(0, 0, 0); }
       to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
@@ -176,29 +284,93 @@
       }
 
       .modules a,
-      .modules a::after {
+      .modules a::after,
+      .instagram {
         transition: none;
       }
     }
   </style>
 </head>
 <body>
-  <main class="hero">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="hero__veil" aria-hidden="true"></div>
+  <main>
+    <section class="hero" aria-label="Inicio">
+      <div class="hero__media" aria-hidden="true"></div>
+      <div class="hero__veil" aria-hidden="true"></div>
 
-    <div class="hero__content">
-      <p class="brand">Covalentes - Bioquímica para medicina<span>.</span></p>
-      <h1 class="lede">Módulos interactivos para bioquímica</h1>
-      <p class="support">Elegí un tema y practicá metabolismo, cálculos clínicos y preguntas de alto rendimiento.</p>
+      <div class="hero__content">
+        <p class="brand">Covalentes - Bioquímica para medicina<span>.</span></p>
+        <h1 class="lede">Módulos interactivos para bioquímica</h1>
+        <p class="support">Elegí un tema y practicá metabolismo, cálculos clínicos y preguntas de alto rendimiento.</p>
 
-      <ul class="modules">
-        <li><a href="colesterol.html">Colesterol</a></li>
-        <li><a href="glucidos_lipidos.html">Glúcidos y lípidos</a></li>
-        <li><a href="lipidos-glucidos-choices.html">Choices Glúcidos y lípidos</a></li>
-        <li><a href="soluciones.html">Soluciones</a></li>
-      </ul>
-    </div>
+        <ul class="modules">
+          <li><a href="colesterol.html">Colesterol</a></li>
+          <li><a href="glucidos_lipidos.html">Glúcidos y lípidos</a></li>
+          <li><a href="lipidos-glucidos-choices.html">Choices Glúcidos y lípidos</a></li>
+          <li><a href="soluciones.html">Soluciones</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Editá el texto de abajo con tu trayectoria real -->
+    <section class="section about" id="acerca" aria-labelledby="about-title">
+      <div class="section__inner">
+        <h2 class="section__title" id="about-title">Acerca de la profe</h2>
+        <p class="section__lead">
+          Soy Julyanna Andrade. Acompaño a estudiantes de medicina a entender bioquímica
+          con claridad clínica y práctica guiada.
+        </p>
+
+        <ul class="about__list">
+          <li>
+            <p class="about__label">Formación</p>
+            <p class="about__text">
+              <!-- Reemplazá esto -->
+              Licenciada / Doctora en … — Universidad …
+            </p>
+          </li>
+          <li>
+            <p class="about__label">Experiencia</p>
+            <p class="about__text">
+              <!-- Reemplazá esto -->
+              Docente de bioquímica para medicina. Enfoque en metabolismo,
+              integración clínica y preparación de evaluaciones.
+            </p>
+          </li>
+          <li>
+            <p class="about__label">Enfoque</p>
+            <p class="about__text">
+              <!-- Reemplazá esto -->
+              Explicaciones paso a paso, casos clínicos y módulos interactivos
+              para estudiar con ritmo y criterio.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Cambiá el href y el @ por tu Instagram real -->
+    <section class="section contact" id="contacto" aria-labelledby="contact-title">
+      <div class="section__inner">
+        <h2 class="section__title" id="contact-title">Contactame</h2>
+        <p class="section__lead">
+          ¿Dudas del curso o de los módulos? Escribime por Instagram.
+        </p>
+
+        <a
+          class="instagram"
+          href="https://instagram.com/TU_USUARIO"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5" stroke="currentColor" stroke-width="1.6" />
+            <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6" />
+            <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" />
+          </svg>
+          <span class="instagram__handle">@TU_USUARIO</span>
+        </a>
+      </div>
+    </section>
   </main>
 </body>
 </html>
