@@ -1,11 +1,6 @@
 # bioquimica
 
-https://julyannaandrade-ship-it.github.io/bioquimica/colesterol.html
-
-https://julyannaandrade-ship-it.github.io/bioquimica/glucidos_lipidos.html
-
-https://julyannaandrade-ship-it.github.io/bioquimica/lipidos-glucidos-choices.html
-
-https://julyannaandrade-ship-it.github.io/bioquimica/glucidos_lipidos.html
-
-https://julyannaandrade-ship-it.github.io/bioquimica/soluciones.html
+- [Colesterol](https://julyannaandrade-ship-it.github.io/bioquimica/colesterol.html)
+- [Glúcidos y lípidos](https://julyannaandrade-ship-it.github.io/bioquimica/glucidos_lipidos.html)
+- [Lípidos y glúcidos (choices)](https://julyannaandrade-ship-it.github.io/bioquimica/lipidos-glucidos-choices.html)
+- [Soluciones](https://julyannaandrade-ship-it.github.io/bioquimica/soluciones.html)
